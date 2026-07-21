@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── USER & AUTH ───────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  phone         String    @unique
+  email         String?   @unique
+  name          String?
+  password      String?
+  role          UserRole  @default(BUYER)
+  isVerified    Boolean   @default(false)
+  nidVerified   Boolean   @default(false)
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  listings      Listing[]
+  vehicles      Vehicle[]
+  constructions Construction[]
+  savedListings SavedListing[]
+  reviews       Review[]
+  subscription  Subscription?
+  otps          OTP[]
+  leadsUnlocked LeadUnlock[]
+}
+
+enum UserRole {
+  BUYER
+  OWNER
+  BROKER
+  BUILDER
+  ADMIN
+}
+
+model OTP {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [phone], references: [phone])
+}
+
+// ─── LOCATION ──────────────────────────────────
+
+model Division {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  nameBn    String
+  districts District[]
+}
+
+model District {
+  id         Int       @id @default(autoincrement())
+  name       String
+  nameBn     String
+  division   Division  @relation(fields: [divisionId], references: [id])
+  divisionId Int
+  upazilas  Upazila[]
+  listings   Listing[]
+  vehicles   Vehicle[]
+  constructions Construction[]
+}
+
+model Upazila {
+  id         Int      @id @default(autoincrement())
+  name       String
+  nameBn     String
+  district   District @relation(fields: [districtId], references: [id])
+  districtId Int
+  listings   Listing[]
+}
+
+// ─── PROPERTY LISTING ──────────────────────────
+
+model Listing {
+  id            String        @id @default(cuid())
+  title         String
+  description   String        @db.Text
+  type          ListingType
+  purpose       ListingPurpose
+  price         Decimal       @db.Decimal(12, 2)
+  negotiable    Boolean       @default(false)
+  area          Float?        // sqft
+  bedrooms      Int?
+  bathrooms     Int?
+  floor         Int?
+  totalFloors   Int?
+  facing        String?
+  furnished     Boolean       @default(false)
+  parking       Boolean       @default(false)
+  gasLine       Boolean       @default(false)
+  lift          Boolean       @default(false)
+  images        ListingImage[]
+  address       String
+  mapLat        Float?
+  mapLng        Float?
+  district      District      @relation(fields: [districtId], references: [id])
+  districtId    Int
+  upazila       Upazila?      @relation(fields: [upazilaId], references: [id])
+  upazilaId     Int?
+  areaName      String?
+  status        ListingStatus @default(PENDING)
+  isFeatured    Boolean       @default(false)
+  viewCount     Int           @default(0)
+  owner         User          @relation(fields: [ownerId], references: [id])
+  ownerId       String
+  savedBy       SavedListing[]
+  leads         LeadUnlock[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model ListingImage {
+  id        String  @id @default(cuid())
+  url       String
+  isPrimary Boolean @default(false)
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  listingId String
+}
+
+enum ListingType {
+  FLAT
+  HOUSE
+  SHOP
+  OFFICE
+  LAND
+  BUILDING
+  WAREHOUSE
+}
+
+enum ListingPurpose {
+  SALE
+  RENT
+}
+
+enum ListingStatus {
+  PENDING
+  ACTIVE
+  SOLD
+  RENTED
+  REJECTED
+  EXPIRED
+}
+
+// ─── VEHICLE ───────────────────────────────────
+
+model Vehicle {
+  id            String        @id @default(cuid())
+  title         String
+  description   String        @db.Text
+  type          VehicleType
+  purpose       VehiclePurpose
+  brand         String
+  model         String
+  year          Int
+  price         Decimal       @db.Decimal(12, 2)
+  negotiable    Boolean       @default(false)
+  mileage       Int?
+  condition     VehicleCondition
+  color         String?
+  fuelType      String?
+  transmission  String?
+  images        VehicleImage[]
+  address       String
+  district      District      @relation(fields: [districtId], references: [id])
+  districtId    Int
+  areaName      String?
+  status        ListingStatus @default(PENDING)
+  isFeatured    Boolean       @default(false)
+  viewCount     Int           @default(0)
+  owner         User          @relation(fields: [ownerId], references: [id])
+  ownerId       String
+  leads         LeadUnlock[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model VehicleImage {
+  id        String  @id @default(cuid())
+  url       String
+  isPrimary Boolean @default(false)
+  vehicle   Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  vehicleId String
+}
+
+enum VehicleType {
+  CAR
+  BIKE
+}
+
+enum VehiclePurpose {
+  SALE
+  RENT
+}
+
+enum VehicleCondition {
+  NEW
+  EXCELLENT
+  GOOD
+  FAIR
+}
+
+// ─── CONSTRUCTION ──────────────────────────────
+
+model Construction {
+  id           String    @id @default(cuid())
+  companyName  String
+  description  String    @db.Text
+  services     String    @db.Text   // JSON array
+  experience   Int       // years
+  portfolio    PortfolioItem[]
+  district     District  @relation(fields: [districtId], references: [id])
+  districtId   Int
+  address      String
+  coverImage   String?
+  status       ListingStatus @default(PENDING)
+  isFeatured   Boolean   @default(false)
+  owner        User      @relation(fields: [ownerId], references: [id])
+  ownerId      String
+  reviews      Review[]
+  leads        LeadUnlock[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model PortfolioItem {
+  id             String       @id @default(cuid())
+  title          String
+  imageUrl       String
+  construction   Construction @relation(fields: [constructionId], references: [id], onDelete: Cascade)
+  constructionId String
+}
+
+// ─── REVIEWS ───────────────────────────────────
+
+model Review {
+  id             String       @id @default(cuid())
+  rating         Int          // 1-5
+  comment        String?      @db.Text
+  reviewer       User         @relation(fields: [reviewerId], references: [id])
+  reviewerId     String
+  construction   Construction? @relation(fields: [constructionId], references: [id])
+  constructionId String?
+  createdAt      DateTime     @default(now())
+}
+
+// ─── SAVED LISTINGS ────────────────────────────
+
+model SavedListing {
+  id        String  @id @default(cuid())
+  user      User    @relation(fields: [userId], references: [id])
+  userId    String
+  listing   Listing @relation(fields: [listingId], references: [id])
+  listingId String
+  savedAt   DateTime @default(now())
+
+  @@unique([userId, listingId])
+}
+
+// ─── LEAD UNLOCK ───────────────────────────────
+
+model LeadUnlock {
+  id             String       @id @default(cuid())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  listing        Listing?     @relation(fields: [listingId], references: [id])
+  listingId      String?
+  vehicle        Vehicle?     @relation(fields: [vehicleId], references: [id])
+  vehicleId      String?
+  construction   Construction? @relation(fields: [constructionId], references: [id])
+  constructionId String?
+  amountPaid     Decimal      @db.Decimal(8, 2)
+  paidAt         DateTime     @default(now())
+}
+
+// ─── SUBSCRIPTION (BROKER/BUILDER) ─────────────
+
+model Subscription {
+  id        String           @id @default(cuid())
+  user      User             @relation(fields: [userId], references: [id])
+  userId    String           @unique
+  plan      SubscriptionPlan
+  startDate DateTime
+  endDate   DateTime
+  isActive  Boolean          @default(true)
+  createdAt DateTime         @default(now())
+}
+
+enum SubscriptionPlan {
+  BASIC
+  PRO
+  ENTERPRISE
+}
