@@ -1,17 +1,28 @@
 'use client'
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { User } from '@/types'
+import axios from 'axios'
+
+interface User {
+  id: string
+  phone: string
+  name: string | null
+  role: string
+  profileImage?: string | null
+}
 
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (userData: User) => void
   logout: () => Promise<void>
   refreshUser: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  logout: async () => {},
+  refreshUser: async () => {},
+})
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -19,13 +30,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = async () => {
     try {
-      const res = await fetch('/api/users/profile')
-      if (res.ok) {
-        const data = await res.json()
-        setUser(data.data?.user || null)
-      } else {
-        setUser(null)
-      }
+      const res = await axios.get('/api/users/profile')
+      setUser(res.data.data.user)
     } catch {
       setUser(null)
     } finally {
@@ -33,29 +39,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  useEffect(() => {
-    refreshUser()
-  }, [])
-
-  const login = (userData: User) => {
-    setUser(userData)
-  }
+  useEffect(() => { refreshUser() }, [])
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
+    await axios.post('/api/auth/logout')
     setUser(null)
     window.location.href = '/'
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within AuthProvider')
-  return context
-}
+export const useAuth = () => useContext(AuthContext)

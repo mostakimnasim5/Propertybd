@@ -1,115 +1,286 @@
-import Link from 'next/link'
-import { Home, Car, Wrench, Search, Shield, Users, TrendingUp } from 'lucide-react'
+'use client'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import axios from 'axios'
+import ListingCard from '@/components/listing/ListingCard'
+import VehicleCard from '@/components/vehicle/VehicleCard'
 
 const CATEGORIES = [
-  { icon: '🏠', label: 'ফ্ল্যাট ভাড়া', href: '/properties?purpose=RENT&type=FLAT' },
-  { icon: '🏡', label: 'বাড়ি বিক্রি', href: '/properties?purpose=SALE&type=HOUSE' },
-  { icon: '🏞️', label: 'জমি বিক্রি', href: '/properties?type=LAND' },
-  { icon: '🏪', label: 'দোকান/অফিস', href: '/properties?type=SHOP' },
-  { icon: '🚗', label: 'কার বিক্রি', href: '/vehicles?type=CAR&purpose=SALE' },
-  { icon: '🚕', label: 'কার ভাড়া', href: '/vehicles?type=CAR&purpose=RENT' },
-  { icon: '🏍️', label: 'বাইক বিক্রি', href: '/vehicles?type=BIKE&purpose=SALE' },
-  { icon: '🏗️', label: 'নির্মাণ সেবা', href: '/construction' },
+  { id: 'property', label: 'প্রপার্টি', icon: '🏠', sub: 'ফ্ল্যাট • বাড়ি • জমি • দোকান' },
+  { id: 'vehicle', label: 'গাড়ি', icon: '🚗', sub: 'প্রাইভেট কার • বাইক' },
+  { id: 'construction', label: 'নির্মাণ', icon: '🏗️', sub: 'বিল্ডার • ঠিকাদার' },
+]
+
+const PURPOSES = [
+  { id: 'ALL', label: 'সব' },
+  { id: 'SALE', label: 'বিক্রি' },
+  { id: 'RENT', label: 'ভাড়া' },
 ]
 
 const STATS = [
-  { label: 'সক্রিয় বিজ্ঞাপন', value: '৫,০০০+', icon: TrendingUp },
-  { label: 'নিবন্ধিত ব্যবহারকারী', value: '২০,০০০+', icon: Users },
-  { label: 'যাচাইকৃত বিক্রেতা', value: '১,৫০০+', icon: Shield },
+  { value: '৫০,০০০+', label: 'সক্রিয় বিজ্ঞাপন' },
+  { value: '৬৪', label: 'জেলায় সেবা' },
+  { value: '১০,০০০+', label: 'সন্তুষ্ট গ্রাহক' },
+  { value: '৯৮%', label: 'যাচাইকৃত বিজ্ঞাপন' },
 ]
 
 export default function HomePage() {
+  const router = useRouter()
+  const [category, setCategory] = useState('property')
+  const [purpose, setPurpose] = useState('ALL')
+  const [searchText, setSearchText] = useState('')
+  const [divisions, setDivisions] = useState<{ id: number; name: string; nameBn: string; districts: { id: number; name: string; nameBn: string }[] }[]>([])
+  const [selectedDivision, setSelectedDivision] = useState('')
+  const [selectedDistrict, setSelectedDistrict] = useState('')
+  const [featuredListings, setFeaturedListings] = useState<any[]>([])
+  const [featuredVehicles, setFeaturedVehicles] = useState<any[]>([])
+  const [loadingListings, setLoadingListings] = useState(true)
+
+  useEffect(() => {
+    axios.get('/api/locations').then(r => setDivisions(r.data.data.divisions)).catch(() => {})
+    axios.get('/api/listings/search?limit=6').then(r => {
+      setFeaturedListings(r.data.data.listings || [])
+      setLoadingListings(false)
+    }).catch(() => setLoadingListings(false))
+    axios.get('/api/vehicles/search?limit=4').then(r => setFeaturedVehicles(r.data.data.vehicles || [])).catch(() => {})
+  }, [])
+
+  const districts = divisions.find(d => d.id.toString() === selectedDivision)?.districts || []
+
+  const handleSearch = () => {
+    const params = new URLSearchParams()
+    if (searchText) params.set('search', searchText)
+    if (selectedDistrict) params.set('districtId', selectedDistrict)
+    if (purpose !== 'ALL') params.set('purpose', purpose)
+
+    if (category === 'vehicle') return router.push(`/vehicles?${params}`)
+    if (category === 'construction') return router.push(`/construction?${params}`)
+    router.push(`/properties?${params}`)
+  }
+
   return (
     <div>
       {/* Hero */}
-      <section className="bg-gradient-to-br from-green-700 via-green-600 to-green-500 text-white py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 leading-tight">
-            বাংলাদেশের সেরা<br />
-            <span className="text-yellow-300">প্রপার্টি মার্কেটপ্লেস</span>
-          </h1>
-          <p className="text-green-100 text-lg mb-8">
-            ফ্ল্যাট, বাড়ি, জমি, গাড়ি কিনুন বা ভাড়া নিন — সহজে, নিরাপদে
-          </p>
+      <section style={{
+        background: 'linear-gradient(135deg, var(--green-deep) 0%, #1a6b47 60%, #0d5a3c 100%)',
+        padding: '64px 0 80px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: -60, right: -60,
+          width: 300, height: 300, borderRadius: '50%',
+          background: 'rgba(245,166,35,0.08)',
+        }} />
+        <div style={{
+          position: 'absolute', bottom: -40, left: '30%',
+          width: 200, height: 200, borderRadius: '50%',
+          background: 'rgba(255,255,255,0.04)',
+        }} />
 
-          {/* Quick Search */}
-          <div className="bg-white rounded-2xl p-2 flex flex-col md:flex-row gap-2 max-w-2xl mx-auto shadow-xl">
-            <input
-              type="text"
-              placeholder="এলাকা, জেলা বা প্রপার্টির ধরন লিখুন..."
-              className="flex-1 px-4 py-3 text-gray-800 rounded-xl outline-none text-sm"
-            />
-            <Link
-              href="/properties"
-              className="flex items-center justify-center gap-2 bg-green-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-green-700 transition-colors"
-            >
-              <Search className="w-4 h-4" /> খুঁজুন
-            </Link>
+        <div className="container" style={{ position: 'relative' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <p style={{ color: 'var(--amber)', fontWeight: 700, fontSize: '0.9rem', letterSpacing: 2, marginBottom: 12, textTransform: 'uppercase' }}>
+              বাংলাদেশের সেরা মার্কেটপ্লেস
+            </p>
+            <h1 style={{ color: 'white', fontSize: 'clamp(1.8rem, 5vw, 3rem)', fontWeight: 800, lineHeight: 1.25, marginBottom: 16 }}>
+              আপনার স্বপ্নের সম্পদ<br />
+              <span style={{ color: 'var(--amber)' }}>এখানেই খুঁজুন</span>
+            </h1>
+            <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '1.1rem', maxWidth: 520, margin: '0 auto' }}>
+              সারা বাংলাদেশে ফ্ল্যাট, বাড়ি, জমি, গাড়ি কেনা-বেচা ও ভাড়া
+            </p>
+          </div>
+
+          {/* Search box */}
+          <div style={{
+            background: 'white',
+            borderRadius: 16,
+            padding: 24,
+            maxWidth: 760,
+            margin: '0 auto',
+            boxShadow: 'var(--shadow-lg)',
+          }}>
+            {/* Category tabs */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '2px solid var(--border)', paddingBottom: 16 }}>
+              {CATEGORIES.map(cat => (
+                <button key={cat.id} onClick={() => setCategory(cat.id)} style={{
+                  flex: 1,
+                  padding: '10px 8px',
+                  border: 'none',
+                  borderRadius: 10,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontWeight: category === cat.id ? 700 : 500,
+                  fontSize: '0.9rem',
+                  background: category === cat.id ? 'var(--green-light)' : 'transparent',
+                  color: category === cat.id ? 'var(--green-deep)' : 'var(--text-secondary)',
+                  transition: 'all 0.2s',
+                  textAlign: 'center',
+                }}>
+                  <div style={{ fontSize: '1.3rem', marginBottom: 2 }}>{cat.icon}</div>
+                  <div>{cat.label}</div>
+                  <div style={{ fontSize: '0.72rem', opacity: 0.7, marginTop: 1 }}>{cat.sub}</div>
+                </button>
+              ))}
+            </div>
+
+            {/* Purpose filter */}
+            {category !== 'construction' && (
+              <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                {PURPOSES.map(p => (
+                  <button key={p.id} onClick={() => setPurpose(p.id)} style={{
+                    padding: '6px 18px',
+                    border: `2px solid ${purpose === p.id ? 'var(--green-deep)' : 'var(--border)'}`,
+                    borderRadius: 99,
+                    background: purpose === p.id ? 'var(--green-deep)' : 'transparent',
+                    color: purpose === p.id ? 'white' : 'var(--text-secondary)',
+                    fontWeight: 600,
+                    fontSize: '0.88rem',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    transition: 'all 0.2s',
+                  }}>
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Location + Search row */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr auto', gap: 10 }}>
+              <select value={selectedDivision} onChange={e => { setSelectedDivision(e.target.value); setSelectedDistrict('') }}>
+                <option value="">বিভাগ বেছে নিন</option>
+                {divisions.map(d => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
+              </select>
+
+              <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)} disabled={!selectedDivision}>
+                <option value="">জেলা বেছে নিন</option>
+                {districts.map(d => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
+              </select>
+
+              <input
+                placeholder="এলাকা / কীওয়ার্ড..."
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              />
+
+              <button className="btn-primary" onClick={handleSearch} style={{ whiteSpace: 'nowrap', padding: '0.75rem 1.25rem' }}>
+                🔍 খুঁজুন
+              </button>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Categories */}
-      <section className="max-w-7xl mx-auto px-4 py-12">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">ক্যাটাগরি</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
-          {CATEGORIES.map(cat => (
-            <Link
-              key={cat.label}
-              href={cat.href}
-              className="flex flex-col items-center gap-2 p-4 bg-white rounded-xl border border-gray-100 hover:border-green-300 hover:shadow-md transition-all group"
-            >
-              <span className="text-3xl">{cat.icon}</span>
-              <span className="text-xs font-medium text-gray-700 text-center group-hover:text-green-600">{cat.label}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="bg-green-50 py-10 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-3 gap-6 text-center">
-          {STATS.map(stat => (
-            <div key={stat.label}>
-              <stat.icon className="w-6 h-6 text-green-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-              <div className="text-sm text-gray-600">{stat.label}</div>
+      {/* Stats bar */}
+      <section style={{ background: 'white', borderBottom: '1px solid var(--border)' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', padding: '24px 1rem' }}>
+          {STATS.map(s => (
+            <div key={s.label} style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--green-deep)' }}>{s.value}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Sections Links */}
-      <section className="max-w-7xl mx-auto px-4 py-12 grid md:grid-cols-3 gap-6">
-        <Link href="/properties" className="group bg-white rounded-2xl border border-gray-100 p-6 hover:border-green-300 hover:shadow-md transition-all">
-          <Home className="w-10 h-10 text-green-500 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-green-600">প্রপার্টি</h3>
-          <p className="text-gray-500 text-sm">ফ্ল্যাট, বাড়ি, জমি, দোকান কেনাবেচা ও ভাড়া। সারা বাংলাদেশে হাজারো বিজ্ঞাপন।</p>
-          <span className="mt-4 inline-block text-green-600 text-sm font-medium">সব দেখুন →</span>
-        </Link>
+      {/* Recent property listings */}
+      <section style={{ padding: '56px 0' }}>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
+            <div>
+              <div className="section-title">সাম্প্রতিক প্রপার্টি</div>
+              <div className="section-sub">নতুন যোগ হওয়া বিজ্ঞাপন</div>
+            </div>
+            <a href="/properties" style={{ color: 'var(--green-deep)', fontWeight: 700, textDecoration: 'none', fontSize: '0.95rem' }}>
+              সব দেখুন →
+            </a>
+          </div>
 
-        <Link href="/vehicles" className="group bg-white rounded-2xl border border-gray-100 p-6 hover:border-green-300 hover:shadow-md transition-all">
-          <Car className="w-10 h-10 text-blue-500 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600">গাড়ি</h3>
-          <p className="text-gray-500 text-sm">প্রাইভেট কার ও বাইক — বিক্রি বা ভাড়ায়। সরাসরি মালিকের সাথে যোগাযোগ।</p>
-          <span className="mt-4 inline-block text-blue-600 text-sm font-medium">সব দেখুন →</span>
-        </Link>
-
-        <Link href="/construction" className="group bg-white rounded-2xl border border-gray-100 p-6 hover:border-green-300 hover:shadow-md transition-all">
-          <Wrench className="w-10 h-10 text-orange-500 mb-4" />
-          <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600">নির্মাণ</h3>
-          <p className="text-gray-500 text-sm">বিশ্বস্ত কন্ট্রাক্টর ও ডেভেলপার। পোর্টফোলিও দেখুন, রিভিউ পড়ুন, কোটেশন নিন।</p>
-          <span className="mt-4 inline-block text-orange-600 text-sm font-medium">সব দেখুন →</span>
-        </Link>
+          {loadingListings ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{ height: 280, background: 'var(--surface-2)', borderRadius: 12, animation: 'pulse 1.5s infinite' }} />
+              ))}
+            </div>
+          ) : featuredListings.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+              {featuredListings.map(l => <ListingCard key={l.id} listing={l} />)}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '3rem', marginBottom: 12 }}>🏠</div>
+              <div>এখনো কোনো বিজ্ঞাপন নেই</div>
+            </div>
+          )}
+        </div>
       </section>
 
-      {/* CTA */}
-      <section className="bg-gray-900 text-white py-12 px-4 text-center">
-        <h2 className="text-2xl font-bold mb-3">আপনার সম্পদ বিক্রি বা ভাড়া দিন</h2>
-        <p className="text-gray-400 mb-6">বিনামূল্যে বিজ্ঞাপন দিন। লক্ষ ক্রেতার কাছে পৌঁছান।</p>
-        <Link href="/post-listing" className="bg-green-500 text-white px-8 py-3 rounded-xl font-semibold hover:bg-green-600 transition-colors inline-block">
-          এখনই বিজ্ঞাপন দিন
-        </Link>
+      {/* CTA Banner */}
+      <section style={{ background: 'var(--amber-light)', padding: '48px 0', borderTop: '1px solid rgba(245,166,35,0.3)' }}>
+        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 24 }}>
+          <div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--green-deep)', marginBottom: 8 }}>
+              আপনার সম্পদ বিক্রি বা ভাড়া দিতে চান?
+            </h2>
+            <p style={{ color: 'var(--text-secondary)' }}>এখনই বিনামূল্যে বিজ্ঞাপন দিন, লক্ষ লক্ষ মানুষের কাছে পৌঁছান।</p>
+          </div>
+          <a href="/post-listing" className="btn-primary" style={{ textDecoration: 'none', padding: '14px 28px', fontSize: '1.05rem' }}>
+            + বিজ্ঞাপন দিন
+          </a>
+        </div>
+      </section>
+
+      {/* Recent vehicles */}
+      {featuredVehicles.length > 0 && (
+        <section style={{ padding: '56px 0', background: 'white' }}>
+          <div className="container">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 24 }}>
+              <div>
+                <div className="section-title">গাড়ি ও বাইক</div>
+                <div className="section-sub">সেকেন্ড হ্যান্ড গাড়ি ও বাইক</div>
+              </div>
+              <a href="/vehicles" style={{ color: 'var(--green-deep)', fontWeight: 700, textDecoration: 'none', fontSize: '0.95rem' }}>
+                সব দেখুন →
+              </a>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
+              {featuredVehicles.map(v => <VehicleCard key={v.id} vehicle={v} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* How it works */}
+      <section style={{ padding: '56px 0', background: 'var(--surface)' }}>
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <div className="section-title">কীভাবে কাজ করে?</div>
+            <div className="section-sub">মাত্র ৩টি ধাপে আপনার কাজ সম্পন্ন করুন</div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 32 }}>
+            {[
+              { step: '১', title: 'অনুসন্ধান করুন', desc: 'লোকেশন, বাজেট ও ধরন দিয়ে আপনার পছন্দের সম্পদ খুঁজুন', icon: '🔍' },
+              { step: '২', title: 'যোগাযোগ করুন', desc: 'লিড আনলক করে সরাসরি মালিকের সাথে যোগাযোগ করুন', icon: '📞' },
+              { step: '৩', title: 'চুক্তি করুন', desc: 'সরাসরি দেখে পছন্দ হলে চুক্তি সম্পন্ন করুন', icon: '🤝' },
+            ].map(item => (
+              <div key={item.step} style={{ textAlign: 'center', padding: '32px 24px', background: 'white', borderRadius: 16, border: '1px solid var(--border)' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: 12 }}>{item.icon}</div>
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%',
+                  background: 'var(--green-deep)', color: 'white',
+                  fontWeight: 800, fontSize: '0.9rem',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 12px',
+                }}>{item.step}</div>
+                <div style={{ fontWeight: 700, fontSize: '1.05rem', marginBottom: 8 }}>{item.title}</div>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', lineHeight: 1.7 }}>{item.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
     </div>
   )
