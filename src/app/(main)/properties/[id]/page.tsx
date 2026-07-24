@@ -82,7 +82,7 @@ export default function PropertyDetailPage() {
           {' → '} {listing.title}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 32, alignItems: 'start' }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: 24, alignItems: "start" }}>
           {/* Left: Images + details */}
           <div>
             {/* Main image */}

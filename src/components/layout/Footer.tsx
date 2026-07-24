@@ -4,7 +4,7 @@ export default function Footer() {
   return (
     <footer style={{ background: 'var(--green-deep)', color: 'white', marginTop: 64 }}>
       <div className="container" style={{ padding: '48px 1rem 32px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 40 }}>
+        <div style={{ className="footer-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 40, marginBottom: 40 }} }}>
           <div>
             <div style={{ fontWeight: 800, fontSize: '1.3rem', marginBottom: 12 }}>
               Property<span style={{ color: 'var(--amber)' }}>BD</span>
@@ -54,7 +54,7 @@ export default function Footer() {
           ))}
         </div>
 
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+        <div style={{ className="footer-bottom" style={{ borderTop: '1px solid rgba(255,255,255,0.15)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }} }}>
           <p style={{ opacity: 0.6, fontSize: '0.85rem' }}>© {new Date().getFullYear()} PropertyBD. সর্বস্বত্ব সংরক্ষিত।</p>
           <p style={{ opacity: 0.6, fontSize: '0.85rem' }}>Made with ❤️ for Bangladesh</p>
         </div>

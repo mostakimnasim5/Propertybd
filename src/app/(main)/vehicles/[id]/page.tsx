@@ -58,7 +58,7 @@ export default function VehicleDetailPage() {
           <Link href="/vehicles" style={{ color: 'inherit', textDecoration: 'none' }}>গাড়ি</Link> → {vehicle.brand} {vehicle.model}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 32, alignItems: 'start' }}>
+        <div style={{ className="detail-layout" style={{ alignItems: 'start' }} }}>
           <div>
             {/* Main image */}
             <div style={{ borderRadius: 16, overflow: 'hidden', background: 'var(--surface-2)', paddingTop: '60%', position: 'relative', marginBottom: 10 }}>

@@ -47,7 +47,7 @@ export default function ConstructionDetailPage() {
           <Link href="/construction" style={{ color: 'inherit', textDecoration: 'none' }}>নির্মাণ</Link> → {company.companyName}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 32, alignItems: 'start' }}>
+        <div style={{ className="detail-layout" style={{ alignItems: 'start' }} }}>
           <div>
             {/* Cover image */}
             {company.coverImage && (

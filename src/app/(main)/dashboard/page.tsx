@@ -40,7 +40,7 @@ export default function DashboardPage() {
   return (
     <div style={{ padding: '32px 0', minHeight: '70vh' }}>
       <div className="container">
-        <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 28, alignItems: 'start' }}>
+        <div style={{ className="dashboard-layout" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 28, alignItems: 'start' }} }}>
           {/* Sidebar */}
           <div style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
             {/* Profile summary */}

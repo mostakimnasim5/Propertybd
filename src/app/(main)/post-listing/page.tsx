@@ -130,7 +130,7 @@ export default function PostListingPage() {
           <div style={{ display: 'grid', gap: 16 }}>
             {/* Category-specific type */}
             {category === 'property' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} }}>
                 <div>
                   <label>প্রপার্টির ধরন *</label>
                   <select value={form.type} onChange={e => set('type', e.target.value)}>
@@ -148,7 +148,7 @@ export default function PostListingPage() {
             )}
 
             {category === 'vehicle' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} }}>
                 <div>
                   <label>গাড়ির ধরন *</label>
                   <select value={form.type} onChange={e => set('type', e.target.value)}>
@@ -183,7 +183,7 @@ export default function PostListingPage() {
 
             {/* Vehicle-specific fields */}
             {category === 'vehicle' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              <div style={{ display: 'grid', className="form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }} }}>
                 <div><label>ব্র্যান্ড *</label><input placeholder="Toyota" value={form.brand} onChange={e => set('brand', e.target.value)} /></div>
                 <div><label>মডেল *</label><input placeholder="Corolla" value={form.model} onChange={e => set('model', e.target.value)} /></div>
                 <div><label>বছর *</label><input type="number" value={form.year} onChange={e => set('year', e.target.value)} /></div>
@@ -200,7 +200,7 @@ export default function PostListingPage() {
 
             {/* Property-specific fields */}
             {category === 'property' && form.type !== 'LAND' && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+              <div style={{ display: 'grid', className="form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }} }}>
                 <div><label>আয়তন (বর্গফুট)</label><input type="number" placeholder="1200" value={form.area} onChange={e => set('area', e.target.value)} /></div>
                 {['FLAT','HOUSE'].includes(form.type) && <>
                   <div><label>বেডরুম</label><input type="number" placeholder="3" value={form.bedrooms} onChange={e => set('bedrooms', e.target.value)} /></div>
@@ -213,7 +213,7 @@ export default function PostListingPage() {
 
             {/* Construction services */}
             {category === 'construction' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div style={{ display: 'grid', className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} }}>
                 <div>
                   <label>অভিজ্ঞতা (বছর) *</label>
                   <input type="number" placeholder="10" value={form.experience} onChange={e => set('experience', e.target.value)} />
@@ -247,7 +247,7 @@ export default function PostListingPage() {
         {/* Location */}
         <div style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
           <div style={{ fontWeight: 700, marginBottom: 16, color: 'var(--green-deep)' }}>📍 অবস্থান</div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div style={{ display: 'grid', className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} }}>
             <div>
               <label>বিভাগ *</label>
               <select value={selectedDiv} onChange={e => { setSelectedDiv(e.target.value); set('districtId', '') }}>
