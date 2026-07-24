@@ -454,3 +454,51 @@ label {
     padding: 16px !important;
   }
 }
+
+/* bKash brand color */
+.bkash-btn {
+  background: #E2136E;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+.bkash-btn:hover { background: #C4115E; }
+
+/* WhatsApp btn */
+.whatsapp-btn {
+  background: #25D366;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.whatsapp-btn:hover { background: #1DA851; }
+
+/* Skeleton animation */
+@keyframes skeleton-pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.45; }
+  100% { opacity: 1; }
+}
+.skeleton {
+  animation: skeleton-pulse 1.3s ease-in-out infinite;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
