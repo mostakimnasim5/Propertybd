@@ -153,7 +153,8 @@ export default function VehicleDetailPage() {
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: 4 }}>মালিকের নম্বর</div>
                     <a href={`tel:${ownerPhone}`} style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--green-deep)', textDecoration: 'none' }}>📞 {ownerPhone}</a>
                   </div>
-                  <a href={`tel:${ownerPhone}`} className="btn-primary" style={{ display: 'flex', justifyContent: 'center', textDecoration: 'none' }}>কল করুন</a>
+                  <a href={`tel:${ownerPhone}`} className="btn-primary" style={{ display: 'flex', justifyContent: 'center', textDecoration: 'none', marginBottom: 8 }}>📞 কল করুন</a>
+                  <a href={`https://wa.me/${ownerPhone?.startsWith('0') ? '88' + ownerPhone : ownerPhone}`} target="_blank" rel="noopener" style={{ display: 'flex', justifyContent: 'center', padding: '10px', borderRadius: 8, textDecoration: 'none', background: '#25D366', color: 'white', fontWeight: 600, fontSize: '0.9rem' }}>💬 WhatsApp করুন</a>
                 </>
               ) : (
                 <>
