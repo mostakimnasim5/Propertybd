@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth'
 import { successResponse, errorResponse, notFoundResponse } from '@/lib/api'
+import { calculateUnlockFee } from '@/lib/pricing'
 
 export async function GET(
   req: NextRequest,
@@ -18,28 +19,25 @@ export async function GET(
         district: true,
         upazila: true,
         owner: {
-          select: {
-            id: true,
-            name: true,
-            nidVerified: true,
-            // Phone only shown if lead is unlocked
-          },
+          select: { id: true, name: true, nidVerified: true },
         },
       },
     })
 
     if (!listing) return notFoundResponse('বিজ্ঞাপন')
 
-    // Increment view count
     await prisma.listing.update({
       where: { id },
       data: { viewCount: { increment: 1 } },
     })
 
-    // Check if current user has unlocked this lead
     let isUnlocked = false
-    if (authUser) {
-      // Owner always sees their own listing contact
+    let ownerPhone: string | null = null
+
+    // numberVisible = true means seller paid, number shown to all
+    if (listing.numberVisible) {
+      isUnlocked = true
+    } else if (authUser) {
       if (listing.ownerId === authUser.userId) {
         isUnlocked = true
       } else {
@@ -50,8 +48,6 @@ export async function GET(
       }
     }
 
-    // Get owner phone only if unlocked
-    let ownerPhone: string | null = null
     if (isUnlocked) {
       const owner = await prisma.user.findUnique({
         where: { id: listing.ownerId },
@@ -60,7 +56,16 @@ export async function GET(
       ownerPhone = owner?.phone || null
     }
 
-    return successResponse({ listing, isUnlocked, ownerPhone })
+    // Dynamic unlock fee based on property price
+    const unlockFee = calculateUnlockFee(Number(listing.price))
+
+    return successResponse({
+      listing,
+      isUnlocked,
+      ownerPhone,
+      unlockFee,
+      numberVisible: listing.numberVisible,
+    })
   } catch (error) {
     console.error('Get listing error:', error)
     return errorResponse('সার্ভার সমস্যা', 500)

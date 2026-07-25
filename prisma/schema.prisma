@@ -30,6 +30,7 @@ model User {
   subscription  Subscription?
   otps          OTP[]
   leadsUnlocked LeadUnlock[]
+  featuredSlots FeaturedListing[]
 }
 
 enum UserRole {
@@ -111,11 +112,14 @@ model Listing {
   areaName      String?
   status        ListingStatus @default(PENDING)
   isFeatured    Boolean       @default(false)
+  numberVisible  Boolean       @default(false)
+  paidListingFee Decimal?     @db.Decimal(8, 2)
   viewCount     Int           @default(0)
   owner         User          @relation(fields: [ownerId], references: [id])
   ownerId       String
   savedBy       SavedListing[]
   leads         LeadUnlock[]
+  featuredSlots FeaturedListing[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
@@ -177,6 +181,8 @@ model Vehicle {
   areaName      String?
   status        ListingStatus @default(PENDING)
   isFeatured    Boolean       @default(false)
+  numberVisible  Boolean       @default(false)
+  paidListingFee Decimal?     @db.Decimal(8, 2)
   viewCount     Int           @default(0)
   owner         User          @relation(fields: [ownerId], references: [id])
   ownerId       String
@@ -300,4 +306,68 @@ enum SubscriptionPlan {
   BASIC
   PRO
   ENTERPRISE
+}
+
+// ─── FEATURED LISTING AUCTION SYSTEM ───────────
+
+model FeaturedListing {
+  id              String         @id @default(cuid())
+
+  // Which listing is being featured
+  listing         Listing        @relation(fields: [listingId], references: [id])
+  listingId       String
+  owner           User           @relation(fields: [ownerId], references: [id])
+  ownerId         String
+
+  // Bidding / Budget
+  bidPerDay       Decimal        @db.Decimal(8, 2)  // daily budget
+  totalBudget     Decimal        @db.Decimal(10, 2) // total amount deposited
+  budgetSpent     Decimal        @default(0) @db.Decimal(10, 2)
+
+  // Targeting (null = all)
+  targetDistrictId Int?          // compete only in this district
+  targetType      String?        // FLAT, HOUSE, LAND etc.
+  targetPurpose   String?        // SALE or RENT
+
+  // Performance tracking
+  impressions     Int            @default(0)  // how many times shown
+  clicks          Int            @default(0)  // how many times clicked
+  ctr             Float          @default(0)  // click-through rate (auto-calculated)
+  relevanceScore  Float          @default(0.5) // 0.0 to 1.0 (quality × ctr)
+
+  // Status
+  status          FeaturedStatus @default(ACTIVE)
+  startDate       DateTime       @default(now())
+  endDate         DateTime?      // null = runs until budget exhausted
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  impressionLogs  ImpressionLog[]
+}
+
+enum FeaturedStatus {
+  ACTIVE          // running, showing in rotation
+  PAUSED          // user paused it
+  BUDGET_DONE     // budget fully spent
+  EXPIRED         // past endDate
+}
+
+// Track every time a listing is shown or clicked
+model ImpressionLog {
+  id              String          @id @default(cuid())
+  listingId       String          // which listing
+  featuredId      String?         // if it was a featured slot
+  featured        FeaturedListing? @relation(fields: [featuredId], references: [id])
+  source          ImpressionSource
+  isClick         Boolean         @default(false) // false=view, true=click
+  districtId      Int?            // where the search happened
+  createdAt       DateTime        @default(now())
+}
+
+enum ImpressionSource {
+  HOMEPAGE        // homepage featured section
+  SEARCH          // search results page
+  SIMILAR         // similar listings section
+  DIRECT          // direct listing URL
 }

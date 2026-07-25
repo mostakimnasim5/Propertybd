@@ -22,11 +22,13 @@ export default function PropertyDetailPage() {
   const [unlocking, setUnlocking] = useState(false)
   const [saved, setSaved] = useState(false)
   const [similar, setSimilar] = useState<any[]>([])
+  const [unlockFee, setUnlockFee] = useState(20)
 
   useEffect(() => {
     axios.get(`/api/listings/${id}`)
       .then(r => {
         setData(r.data.data)
+        setUnlockFee(r.data.data.unlockFee || 20)
         const l = r.data.data.listing
         // Fetch similar listings
         axios.get(`/api/listings/similar?listingId=${id}&districtId=${l.districtId}&type=${l.type}&purpose=${l.purpose}`)
@@ -41,7 +43,7 @@ export default function PropertyDetailPage() {
     if (!user) { window.location.href = `/login?redirect=/properties/${id}`; return }
     setUnlocking(true)
     try {
-      const res = await axios.post('/api/payments/init', { type: 'lead', itemId: id, amount: 20 })
+      const res = await axios.post('/api/payments/init', { type: 'unlock', itemId: id, category: 'property' })
       window.location.href = res.data.data.gatewayUrl
     } catch {
       toast.error('Payment শুরু করতে সমস্যা হয়েছে')
@@ -212,11 +214,11 @@ export default function PropertyDetailPage() {
               ) : (
                 <>
                   <div style={{ background: 'var(--amber-light)', borderRadius: 10, padding: 10, marginBottom: 10, fontSize: '0.85rem', color: '#92400E' }}>
-                    🔒 নম্বর দেখতে মাত্র ৳২০ দিন
+                    🔒 নম্বর দেখতে মাত্র ৳{unlockFee} দিন
                   </div>
                   <button className="btn-primary" onClick={handleUnlock} disabled={unlocking}
                     style={{ width: '100%', justifyContent: 'center', marginBottom: 8 }}>
-                    {unlocking ? 'প্রক্রিয়া হচ্ছে...' : '🔓 নম্বর দেখুন — ৳২০'}
+                    {unlocking ? 'প্রক্রিয়া হচ্ছে...' : `🔓 নম্বর দেখুন — ৳${unlockFee}`}
                   </button>
                 </>
               )}

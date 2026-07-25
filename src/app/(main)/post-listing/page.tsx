@@ -306,6 +306,30 @@ export default function PostListingPage() {
           style={{ width: '100%', justifyContent: 'center', padding: '16px', fontSize: '1.05rem' }}>
           {submitting ? '⏳ জমা হচ্ছে...' : '✅ বিজ্ঞাপন জমা দিন'}
         </button>
+
+        {/* Paid listing option */}
+        <div style={{ marginTop: 16, background: 'var(--amber-light)', borderRadius: 12, border: '1px solid rgba(245,166,35,0.3)', padding: 18 }}>
+          <div style={{ fontWeight: 700, marginBottom: 8, color: '#92400E' }}>
+            ⚡ নম্বর সরাসরি দেখান (Paid Listing)
+          </div>
+          <p style={{ fontSize: '0.88rem', color: '#92400E', lineHeight: 1.7, marginBottom: 12 }}>
+            সাধারণ listing-এ buyer ছোট্ট unlock fee দিয়ে নম্বর দেখে।
+            কিন্তু আপনি যদি paid listing করেন, সবাই বিনামূল্যে আপনার নম্বর দেখতে পাবে — বেশি inquiry আসবে।
+          </p>
+          <div style={{ background: 'white', borderRadius: 8, padding: 12, fontSize: '0.82rem', color: TEXT_SECONDARY }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+              {[['১০ লাখ', '৳৪০'], ['২০ লাখ', '৳৪০'], ['৩০ লাখ', '৳৬০'], ['৫০ লাখ', '৳১০০']].map(([price, fee]) => (
+                <div key={price} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>সম্পদের দাম {price}</span>
+                  <span style={{ fontWeight: 700, color: 'var(--green-deep)' }}>Paid fee: {fee}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p style={{ fontSize: '0.78rem', color: '#92400E', marginTop: 8 }}>
+            * বিজ্ঞাপন অনুমোদনের পর paid listing upgrade করা যাবে।
+          </p>
+        </div>
       </div>
     </div>
   )
