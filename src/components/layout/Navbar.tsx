@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/AuthContext'
 import { usePathname } from 'next/navigation'
+import { useLang } from '@/contexts/LanguageContext'
 
 const NAV_LINKS = [
   { href: '/properties', label: '🏠 প্রপার্টি' },
@@ -12,6 +13,7 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const { user, logout, loading } = useAuth()
+  const { lang, toggle, t } = useLang()
   const [menuOpen, setMenuOpen] = useState(false)
   const [dropOpen, setDropOpen] = useState(false)
   const pathname = usePathname()
@@ -91,6 +93,19 @@ export default function Navbar() {
                 )}
               </>
             )}
+
+            {/* Language toggle */}
+            <button onClick={toggle} title={lang === 'bn' ? t.lang.switchToEn : t.lang.switchToBn} style={{
+              padding: '5px 10px', borderRadius: 8,
+              border: '1.5px solid var(--border)',
+              background: 'var(--green-light)',
+              color: 'var(--green-deep)',
+              fontWeight: 800, cursor: 'pointer',
+              fontFamily: 'inherit', fontSize: '0.78rem',
+              letterSpacing: 0.5,
+            }}>
+              {lang === 'bn' ? 'ENG' : 'বাং'}
+            </button>
 
             {/* Hamburger — mobile only */}
             <button onClick={() => setMenuOpen(!menuOpen)} className="show-mobile" style={{

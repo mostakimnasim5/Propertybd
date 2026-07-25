@@ -4,25 +4,26 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import ListingCard from '@/components/listing/ListingCard'
 import VehicleCard from '@/components/vehicle/VehicleCard'
-
-const CATEGORIES = [
-  { id: 'property', label: 'প্রপার্টি', icon: '🏠', sub: 'ফ্ল্যাট • বাড়ি • জমি' },
-  { id: 'vehicle', label: 'গাড়ি', icon: '🚗', sub: 'কার • বাইক' },
-  { id: 'construction', label: 'নির্মাণ', icon: '🏗️', sub: 'বিল্ডার • ঠিকাদার' },
-]
-const PURPOSES = [
-  { id: 'ALL', label: 'সব' },
-  { id: 'SALE', label: 'বিক্রি' },
-  { id: 'RENT', label: 'ভাড়া' },
-]
-const STATS = [
-  { value: '৫০,০০০+', label: 'সক্রিয় বিজ্ঞাপন' },
-  { value: '৬৪', label: 'জেলায় সেবা' },
-  { value: '১০,০০০+', label: 'সন্তুষ্ট গ্রাহক' },
-  { value: '৯৮%', label: 'যাচাইকৃত বিজ্ঞাপন' },
-]
+import { useT } from '@/contexts/LanguageContext'
 
 export default function HomePage() {
+  const t = useT()
+  const CATEGORIES = [
+    { id: "property", label: t.categories.property, icon: "🏠", sub: t.categories.propertySub },
+    { id: "vehicle", label: t.categories.vehicle, icon: "🚗", sub: t.categories.vehicleSub },
+    { id: "construction", label: t.categories.construction, icon: "🏗️", sub: t.categories.constructionSub },
+  ]
+  const PURPOSES = [
+    { id: "ALL", label: t.home.all },
+    { id: "SALE", label: t.home.sale },
+    { id: "RENT", label: t.home.rent },
+  ]
+  const STATS = [
+    { value: "৫০,০০০+", label: t.home.stats.listings },
+    { value: "৬৪", label: t.home.stats.districts },
+    { value: "১০,০০০+", label: t.home.stats.customers },
+    { value: "৯৮%", label: t.home.stats.verified },
+  ]
   const router = useRouter()
   const [category, setCategory] = useState('property')
   const [purpose, setPurpose] = useState('ALL')
