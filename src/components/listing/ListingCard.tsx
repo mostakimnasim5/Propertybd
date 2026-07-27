@@ -1,100 +1,106 @@
+'use client'
 import Link from 'next/link'
-import Image from 'next/image'
-import { MapPin, Maximize2, BedDouble, Bath, Star } from 'lucide-react'
-import { Listing } from '@/types'
+import axios from 'axios'
 
 const TYPE_LABELS: Record<string, string> = {
-  FLAT: 'ফ্ল্যাট', HOUSE: 'বাড়ি', SHOP: 'দোকান',
-  OFFICE: 'অফিস', LAND: 'জমি', BUILDING: 'ভবন', WAREHOUSE: 'গুদাম',
+  FLAT: 'ফ্ল্যাট', HOUSE: 'বাড়ি', LAND: 'জমি',
+  SHOP: 'দোকান', OFFICE: 'অফিস', WAREHOUSE: 'গোডাউন', BUILDING: 'ভবন',
 }
 
-function formatPrice(price: number): string {
-  if (price >= 10000000) return `${(price / 10000000).toFixed(1)} কোটি`
-  if (price >= 100000) return `${(price / 100000).toFixed(1)} লাখ`
-  if (price >= 1000) return `${(price / 1000).toFixed(0)}K`
-  return price.toLocaleString('bn-BD')
+interface Props {
+  listing: any
+  featuredId?: string   // থাকলে click track করবে
+  isFeaturedSlot?: boolean  // sponsored badge দেখাবে
 }
 
-export default function ListingCard({ listing }: { listing: Listing }) {
-  const primaryImage = listing.images?.find(i => i.isPrimary) || listing.images?.[0]
+export default function ListingCard({ listing, featuredId, isFeaturedSlot }: Props) {
+  const img = listing.images?.[0]?.url || null
+
+  const handleClick = () => {
+    if (featuredId && listing.id) {
+      // Fire-and-forget click tracking
+      axios.post('/api/featured/click', {
+        featuredId,
+        listingId: listing.id,
+        districtId: listing.districtId,
+      }).catch(() => {})
+    }
+  }
 
   return (
-    <Link href={`/properties/${listing.id}`} className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100">
-      {/* Image */}
-      <div className="relative h-48 bg-gray-100">
-        {primaryImage ? (
-          <Image
-            src={primaryImage.url}
-            alt={listing.title}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, 33vw"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-            কোনো ছবি নেই
+    <Link href={`/properties/${listing.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={handleClick}>
+      <div className="card" style={{
+        cursor: 'pointer',
+        outline: isFeaturedSlot ? '2px solid rgba(245,166,35,0.4)' : 'none',
+      }}>
+        {/* Image */}
+        <div style={{ position: 'relative', paddingTop: '62%', background: 'var(--surface-2)', overflow: 'hidden' }}>
+          {img ? (
+            <img src={img} alt={listing.title}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>🏠</div>
+          )}
+
+          {/* Badges */}
+          <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+            {isFeaturedSlot && (
+              <span style={{ background: 'rgba(245,166,35,0.95)', color: '#1A1A2E', fontSize: '0.65rem', fontWeight: 800, padding: '2px 7px', borderRadius: 99, backdropFilter: 'blur(4px)' }}>
+                ⚡ স্পন্সরড
+              </span>
+            )}
+            {listing.isFeatured && !isFeaturedSlot && (
+              <span className="badge-featured">⭐ ফিচার্ড</span>
+            )}
           </div>
-        )}
 
-        {/* Badges */}
-        <div className="absolute top-2 left-2 flex gap-1.5">
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${listing.purpose === 'RENT' ? 'bg-blue-500 text-white' : 'bg-orange-500 text-white'}`}>
-            {listing.purpose === 'RENT' ? 'ভাড়া' : 'বিক্রি'}
-          </span>
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/90 text-gray-700">
-            {TYPE_LABELS[listing.type] || listing.type}
-          </span>
-        </div>
-
-        {listing.isFeatured && (
-          <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-            <Star className="w-3 h-3" /> ফিচার্ড
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900 text-sm line-clamp-2 mb-1 group-hover:text-green-600 transition-colors">
-          {listing.title}
-        </h3>
-
-        <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
-          <MapPin className="w-3 h-3 flex-shrink-0" />
-          <span className="truncate">
-            {listing.areaName ? `${listing.areaName}, ` : ''}{listing.district.name}
+          <span style={{
+            position: 'absolute', top: 8, right: 8,
+            background: listing.purpose === 'SALE' ? 'var(--green-deep)' : '#1D4ED8',
+            color: 'white', fontSize: '0.65rem', fontWeight: 700,
+            padding: '2px 7px', borderRadius: 99,
+          }}>
+            {listing.purpose === 'SALE' ? 'বিক্রয়' : 'ভাড়া'}
           </span>
         </div>
 
-        {/* Specs */}
-        <div className="flex items-center gap-3 text-xs text-gray-600 mb-3">
-          {listing.area && (
-            <span className="flex items-center gap-1">
-              <Maximize2 className="w-3 h-3" /> {listing.area} sqft
+        {/* Content */}
+        <div style={{ padding: '12px 14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 5 }}>
+            <span style={{ background: 'var(--green-light)', color: 'var(--green-deep)', fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: 99 }}>
+              {TYPE_LABELS[listing.type] || listing.type}
             </span>
-          )}
-          {listing.bedrooms && (
-            <span className="flex items-center gap-1">
-              <BedDouble className="w-3 h-3" /> {listing.bedrooms} বেড
-            </span>
-          )}
-          {listing.bathrooms && (
-            <span className="flex items-center gap-1">
-              <Bath className="w-3 h-3" /> {listing.bathrooms} বাথ
-            </span>
-          )}
-        </div>
-
-        {/* Price + verified */}
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-green-600 font-bold text-base">৳ {formatPrice(listing.price)}</span>
-            {listing.purpose === 'RENT' && <span className="text-xs text-gray-500">/মাস</span>}
-            {listing.negotiable && <span className="text-xs text-gray-400 ml-1">(আলোচনাসাপেক্ষ)</span>}
+            {listing.owner?.nidVerified && (
+              <span className="badge-verified">✓ যাচাই</span>
+            )}
           </div>
-          {listing.owner?.nidVerified && (
-            <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium">✓ যাচাই</span>
+
+          <div style={{
+            fontWeight: 700, fontSize: '0.92rem', lineHeight: 1.35, marginBottom: 5,
+            display: '-webkit-box', WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {listing.title}
+          </div>
+
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+            📍 {listing.areaName ? `${listing.areaName}, ` : ''}{listing.district?.nameBn}
+          </div>
+
+          {(listing.bedrooms || listing.bathrooms || listing.area) && (
+            <div style={{ display: 'flex', gap: 8, fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
+              {listing.bedrooms && <span>🛏 {listing.bedrooms}</span>}
+              {listing.bathrooms && <span>🚿 {listing.bathrooms}</span>}
+              {listing.area && <span>📐 {listing.area}</span>}
+            </div>
           )}
+
+          <div className="price-tag">
+            ৳ {Number(listing.price).toLocaleString('bn-BD')}
+            {listing.purpose === 'RENT' && (
+              <span style={{ fontSize: '0.72rem', fontWeight: 400, color: 'var(--text-muted)', marginLeft: 2 }}>/মাস</span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

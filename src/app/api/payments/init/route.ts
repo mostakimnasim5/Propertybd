@@ -2,16 +2,14 @@ import { NextRequest } from 'next/server'
 import { getAuthUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { successResponse, errorResponse, unauthorizedResponse } from '@/lib/api'
-import { calculateUnlockFee, calculatePaidListingFee } from '@/lib/pricing'
 
 export async function POST(req: NextRequest) {
   try {
     const authUser = await getAuthUser()
     if (!authUser) return unauthorizedResponse()
 
-    const { type, itemId, category } = await req.json()
-    // type: 'unlock' | 'paid_listing' | 'featured' | 'subscription'
-    // category: 'property' | 'vehicle' | 'construction'
+    const { type, itemId, plan } = await req.json()
+    // type: 'featured_boost' | 'subscription' | 'paid_listing'
 
     if (!type) return errorResponse('Payment তথ্য সঠিক নয়')
 
@@ -21,56 +19,36 @@ export async function POST(req: NextRequest) {
     })
     if (!user) return unauthorizedResponse()
 
-    // Calculate dynamic amount based on property price
     let amount = 0
     let productName = ''
 
-    if (type === 'unlock' && itemId) {
-      // Get property/vehicle price for dynamic fee
-      let price = 0
-      if (category === 'vehicle') {
-        const vehicle = await prisma.vehicle.findUnique({
-          where: { id: itemId }, select: { price: true, title: true },
-        })
-        price = Number(vehicle?.price || 0)
-        productName = `Lead Unlock — ${vehicle?.title || 'Vehicle'}`
-      } else {
-        const listing = await prisma.listing.findUnique({
-          where: { id: itemId }, select: { price: true, title: true },
-        })
-        price = Number(listing?.price || 0)
-        productName = `Lead Unlock — ${listing?.title || 'Property'}`
-      }
-      amount = calculateUnlockFee(price)
-
-    } else if (type === 'paid_listing' && itemId) {
-      // Seller paying to show number publicly
-      let price = 0
-      if (category === 'vehicle') {
-        const vehicle = await prisma.vehicle.findUnique({
-          where: { id: itemId }, select: { price: true },
-        })
-        price = Number(vehicle?.price || 0)
-      } else {
-        const listing = await prisma.listing.findUnique({
-          where: { id: itemId }, select: { price: true },
-        })
-        price = Number(listing?.price || 0)
-      }
-      amount = calculatePaidListingFee(price)
-      productName = 'Paid Listing — Number Visible'
-
-    } else if (type === 'featured') {
-      amount = 500
-      productName = 'Featured Listing'
+    if (type === 'featured_boost' && itemId) {
+      // Featured boost payment — amount comes from form
+      const boost = await prisma.featuredListing.findUnique({
+        where: { id: itemId, ownerId: authUser.userId },
+        select: { totalBudget: true },
+      })
+      amount = Number(boost?.totalBudget || 0)
+      productName = 'Listing Boost'
 
     } else if (type === 'subscription') {
       const planAmounts: Record<string, number> = {
         BASIC: 1500, PRO: 3000, ENTERPRISE: 5000,
       }
-      const plan = req.headers.get('x-plan') || 'BASIC'
-      amount = planAmounts[plan] || 1500
-      productName = `Broker Subscription — ${plan}`
+      amount = planAmounts[plan || 'BASIC'] || 1500
+      productName = `Broker Subscription — ${plan || 'BASIC'}`
+
+    } else if (type === 'paid_listing' && itemId) {
+      // Seller pays to show number publicly
+      const listing = await prisma.listing.findUnique({
+        where: { id: itemId }, select: { price: true },
+      })
+      const price = Number(listing?.price || 0)
+      // ২০ লাখের নিচে ৳৪০, প্রতি লাখে +৳২
+      amount = price <= 2_000_000
+        ? 40
+        : 40 + Math.floor((price - 2_000_000) / 100_000) * 2
+      productName = 'Paid Listing — Number Visible'
 
     } else {
       return errorResponse('Invalid payment type')
@@ -92,7 +70,7 @@ export async function POST(req: NextRequest) {
       total_amount: amount.toString(),
       currency: 'BDT',
       tran_id: transactionId,
-      success_url: `${appUrl}/api/payments/callback?status=success&type=${type}&itemId=${itemId || ''}&category=${category || 'property'}`,
+      success_url: `${appUrl}/api/payments/callback?status=success&type=${type}&itemId=${itemId || ''}`,
       fail_url: `${appUrl}/api/payments/callback?status=fail`,
       cancel_url: `${appUrl}/api/payments/callback?status=cancel`,
       ipn_url: `${appUrl}/api/payments/callback?status=ipn`,
@@ -115,11 +93,7 @@ export async function POST(req: NextRequest) {
       return errorResponse('Payment gateway সংযোগ ব্যর্থ হয়েছে', 500)
     }
 
-    return successResponse({
-      gatewayUrl: data.GatewayPageURL,
-      transactionId,
-      amount,
-    })
+    return successResponse({ gatewayUrl: data.GatewayPageURL, transactionId, amount })
   } catch (error) {
     console.error('Payment init error:', error)
     return errorResponse('সার্ভার সমস্যা', 500)

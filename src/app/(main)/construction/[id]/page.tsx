@@ -11,7 +11,7 @@ export default function ConstructionDetailPage() {
   const { user } = useAuth()
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
-  const [unlocking, setUnlocking] = useState(false)
+  
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
   const [submittingReview, setSubmittingReview] = useState(false)
@@ -26,14 +26,6 @@ export default function ConstructionDetailPage() {
 
   useEffect(() => { fetchData() }, [id])
 
-  const handleUnlock = async () => {
-    if (!user) { window.location.href = `/login?redirect=/construction/${id}`; return }
-    setUnlocking(true)
-    try {
-      const res = await axios.post('/api/payments/init', { type: 'lead', itemId: id, amount: 20 })
-      window.location.href = res.data.data.gatewayUrl
-    } catch { toast.error('Payment শুরু করতে সমস্যা হয়েছে') }
-    finally { setUnlocking(false) }
   }
 
   const handleReview = async () => {
@@ -58,7 +50,7 @@ export default function ConstructionDetailPage() {
     </div>
   )
 
-  const { company, isUnlocked, ownerPhone, avgRating } = data
+  const { company, ownerPhone, avgRating } = data
   const services = (() => { try { return JSON.parse(company.services) } catch { return [] } })()
   const waLink = ownerPhone
     ? `https://wa.me/${ownerPhone.startsWith('0') ? '88' + ownerPhone : ownerPhone}?text=${encodeURIComponent(`PropertyBD থেকে ${company.companyName} সম্পর্কে জানতে চাই।`)}`
@@ -199,35 +191,24 @@ export default function ConstructionDetailPage() {
                 {avgRating && ` • ★ ${avgRating.toFixed(1)}`}
               </div>
 
-              {isUnlocked ? (
-                <>
-                  <div style={{ background: 'var(--green-light)', borderRadius: 10, padding: 14, textAlign: 'center', marginBottom: 10 }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 3 }}>যোগাযোগ নম্বর</div>
-                    <a href={`tel:${ownerPhone}`} style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--green-deep)', textDecoration: 'none' }}>
-                      📞 {ownerPhone}
-                    </a>
-                  </div>
-                  <a href={`tel:${ownerPhone}`} className="btn-primary" style={{ display: 'flex', justifyContent: 'center', textDecoration: 'none', marginBottom: 8 }}>
-                    📞 কল করুন
+              {ownerPhone && (
+                <div style={{ background: 'var(--green-light)', borderRadius: 12, padding: 14, textAlign: 'center', marginBottom: 10 }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', marginBottom: 3 }}>যোগাযোগ নম্বর</div>
+                  <a href={`tel:${ownerPhone}`} style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--green-deep)', textDecoration: 'none' }}>
+                    📞 {ownerPhone}
                   </a>
-                  <a href={waLink} target="_blank" rel="noopener" style={{
-                    display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6,
-                    padding: '10px', borderRadius: 8, textDecoration: 'none',
-                    background: '#25D366', color: 'white', fontWeight: 600, fontSize: '0.9rem',
-                  }}>
-                    💬 WhatsApp করুন
-                  </a>
-                </>
-              ) : (
-                <>
-                  <div style={{ background: 'var(--amber-light)', borderRadius: 10, padding: 10, marginBottom: 10, fontSize: '0.85rem', color: '#92400E' }}>
-                    🔒 নম্বর দেখতে মাত্র ৳২০ দিন
-                  </div>
-                  <button className="btn-primary" onClick={handleUnlock} disabled={unlocking} style={{ width: '100%', justifyContent: 'center' }}>
-                    {unlocking ? 'প্রক্রিয়া হচ্ছে...' : '🔓 নম্বর দেখুন — ৳২০'}
-                  </button>
-                </>
+                </div>
               )}
+              <a href={`tel:${ownerPhone}`} className="btn-primary" style={{ display: 'flex', justifyContent: 'center', textDecoration: 'none', marginBottom: 8 }}>
+                📞 কল করুন
+              </a>
+              <a href={waLink} target="_blank" rel="noopener" style={{
+                display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6,
+                padding: '10px', borderRadius: 8, textDecoration: 'none',
+                background: '#25D366', color: 'white', fontWeight: 600, fontSize: '0.9rem',
+              }}>
+                💬 WhatsApp করুন
+              </a>
             </div>
           </div>
         </div>

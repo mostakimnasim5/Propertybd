@@ -502,3 +502,6 @@ label {
   background: var(--surface-2);
   border-radius: 6px;
 }
+
+/* Lead unlock removed — number shown freely */
+/* .lead-unlock-btn { display: none; } */
