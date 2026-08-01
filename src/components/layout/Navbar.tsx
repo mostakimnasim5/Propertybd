@@ -71,6 +71,7 @@ export default function Navbar() {
                         }}>
                           {[
                             { href: '/dashboard', label: '📊 ড্যাশবোর্ড' },
+                          { href: '/subscription', label: '👔 Subscription' },
                             { href: '/saved', label: '❤️ সংরক্ষিত' },
                             { href: '/post-listing', label: '+ বিজ্ঞাপন দিন' },
                             ...(user.role === 'ADMIN' ? [{ href: '/admin/dashboard', label: '⚙️ অ্যাডমিন' }] : []),

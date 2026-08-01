@@ -66,6 +66,8 @@ export default function DashboardPage() {
             {[
               { href: '/dashboard', label: '📊 আমার বিজ্ঞাপন', active: true },
               { href: '/dashboard/boost', label: '⚡ Listing Boost' },
+              { href: '/subscription', label: '👔 Subscription' },
+              { href: '/dashboard/subscription', label: '👔 Subscription' },
               { href: '/saved', label: '❤️ সংরক্ষিত' },
               { href: '/post-listing', label: '+ নতুন বিজ্ঞাপন' },
             ].map(item => (

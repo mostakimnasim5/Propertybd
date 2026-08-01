@@ -34,6 +34,7 @@ export default function Footer() {
               title: 'আমাদের সম্পর্কে', links: [
                 { href: '/about', label: 'আমাদের পরিচয়' },
                 { href: '/contact', label: 'যোগাযোগ' },
+                { href: '/subscription', label: 'Broker Subscription' },
                 { href: '/privacy', label: 'গোপনীয়তা নীতি' },
                 { href: '/terms', label: 'শর্তাবলি' },
               ]
