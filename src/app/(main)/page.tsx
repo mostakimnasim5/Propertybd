@@ -32,6 +32,7 @@ export default function HomePage() {
   const [selectedDivision, setSelectedDivision] = useState('')
   const [selectedDistrict, setSelectedDistrict] = useState('')
   const [featuredListings, setFeaturedListings] = useState<any[]>([])
+  const [sponsoredListings, setSponsoredListings] = useState<any[]>([])
   const [featuredVehicles, setFeaturedVehicles] = useState<any[]>([])
   const [loadingListings, setLoadingListings] = useState(true)
 
@@ -42,6 +43,10 @@ export default function HomePage() {
       setLoadingListings(false)
     }).catch(() => setLoadingListings(false))
     axios.get('/api/vehicles/search?limit=4').then(r => setFeaturedVehicles(r.data.data.vehicles || [])).catch(() => {})
+    // Algorithm-based sponsored listings for homepage
+    axios.get('/api/featured/listings?limit=3').then(r => {
+      setSponsoredListings(r.data.data.listings || [])
+    }).catch(() => {})
   }, [])
 
   const districts = divisions.find(d => d.id.toString() === selectedDivision)?.districts || []
@@ -132,6 +137,32 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* ── Sponsored Section ───────────────────── */}
+      {sponsoredListings.length > 0 && (
+        <section style={{ padding: '28px 0', background: 'white', borderBottom: '1px solid var(--border)' }}>
+          <div className="container">
+            <div className="flex-between" style={{ marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ background: 'rgba(245,166,35,0.15)', color: '#92400E', fontSize: '0.72rem', fontWeight: 800, padding: '3px 10px', borderRadius: 99, border: '1px solid rgba(245,166,35,0.35)' }}>
+                  ⚡ স্পন্সরড বিজ্ঞাপন
+                </span>
+                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Boost করা listing</span>
+              </div>
+            </div>
+            <div className="grid-auto">
+              {sponsoredListings.map((f: any) => (
+                <ListingCard
+                  key={`sp-${f.featuredId}`}
+                  listing={f.listing}
+                  featuredId={f.featuredId}
+                  isFeaturedSlot={true}
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Recent Listings ─────────────────────── */}
       <section style={{ padding: 'clamp(36px, 8vw, 56px) 0' }}>

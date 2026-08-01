@@ -9,16 +9,15 @@ export async function GET(req: NextRequest) {
     const districtId = searchParams.get('districtId')
     const type = searchParams.get('type')
     const purpose = searchParams.get('purpose')
-    const limit = parseInt(searchParams.get('limit') || '3')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '3'), 5)
 
     const featured = await getRotatedFeaturedListings({
       districtId: districtId ? parseInt(districtId) : undefined,
       type: type || undefined,
       purpose: purpose || undefined,
-      limit: Math.min(limit, 5), // সর্বোচ্চ ৫টা
+      limit,
     })
 
-    // Clean response — ranking details client-এ expose করবো না
     const listings = featured.map(f => ({
       featuredId: f.featuredId,
       listingId: f.listingId,
@@ -29,6 +28,7 @@ export async function GET(req: NextRequest) {
     return successResponse({ listings, count: listings.length })
   } catch (error) {
     console.error('Featured listings error:', error)
-    return errorResponse('সার্ভার সমস্যা', 500)
+    // Non-fatal — return empty rather than error
+    return successResponse({ listings: [], count: 0 })
   }
 }

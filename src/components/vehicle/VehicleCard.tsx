@@ -1,70 +1,93 @@
+'use client'
 import Link from 'next/link'
-import Image from 'next/image'
-import { MapPin, Gauge, Star } from 'lucide-react'
-import { Vehicle } from '@/types'
+import axios from 'axios'
 
 const CONDITION_LABELS: Record<string, string> = {
   NEW: 'নতুন', EXCELLENT: 'চমৎকার', GOOD: 'ভালো', FAIR: 'মোটামুটি',
 }
 
-function formatPrice(price: number): string {
-  if (price >= 10000000) return `${(price / 10000000).toFixed(1)} কোটি`
-  if (price >= 100000) return `${(price / 100000).toFixed(1)} লাখ`
-  return `${(price / 1000).toFixed(0)}K`
+interface Props {
+  vehicle: any
+  featuredId?: string
+  isFeaturedSlot?: boolean
 }
 
-export default function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
-  const primaryImage = vehicle.images?.find(i => i.isPrimary) || vehicle.images?.[0]
+export default function VehicleCard({ vehicle, featuredId, isFeaturedSlot }: Props) {
+  const img = vehicle.images?.[0]?.url || null
+
+  const handleClick = () => {
+    if (featuredId && vehicle.id) {
+      axios.post('/api/featured/click', {
+        featuredId,
+        listingId: vehicle.id,
+        districtId: vehicle.districtId,
+      }).catch(() => {})
+    }
+  }
 
   return (
-    <Link href={`/vehicles/${vehicle.id}`} className="group bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all border border-gray-100">
-      <div className="relative h-48 bg-gray-100">
-        {primaryImage ? (
-          <Image src={primaryImage.url} alt={vehicle.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" sizes="(max-width: 768px) 100vw, 33vw" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">কোনো ছবি নেই</div>
-        )}
-        <div className="absolute top-2 left-2 flex gap-1.5">
-          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${vehicle.purpose === 'RENT' ? 'bg-blue-500 text-white' : 'bg-orange-500 text-white'}`}>
-            {vehicle.purpose === 'RENT' ? 'ভাড়া' : 'বিক্রি'}
-          </span>
-          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-white/90 text-gray-700">
-            {vehicle.type === 'CAR' ? 'কার' : 'বাইক'}
-          </span>
-        </div>
-        {vehicle.isFeatured && (
-          <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-            <Star className="w-3 h-3" /> ফিচার্ড
-          </div>
-        )}
-      </div>
-
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900 text-sm line-clamp-1 mb-1 group-hover:text-green-600 transition-colors">
-          {vehicle.title}
-        </h3>
-        <p className="text-xs text-gray-500 mb-2">{vehicle.brand} {vehicle.model} · {vehicle.year}</p>
-
-        <div className="flex items-center gap-1 text-xs text-gray-500 mb-3">
-          <MapPin className="w-3 h-3" />
-          <span className="truncate">{vehicle.district.name}</span>
-        </div>
-
-        <div className="flex items-center gap-3 text-xs text-gray-600 mb-3">
-          <span className="bg-gray-100 px-2 py-0.5 rounded">{CONDITION_LABELS[vehicle.condition]}</span>
-          {vehicle.mileage && (
-            <span className="flex items-center gap-1"><Gauge className="w-3 h-3" /> {vehicle.mileage.toLocaleString()} কিমি</span>
+    <Link href={`/vehicles/${vehicle.id}`} style={{ textDecoration: 'none', color: 'inherit' }} onClick={handleClick}>
+      <div className="card" style={{
+        cursor: 'pointer',
+        outline: isFeaturedSlot ? '2px solid rgba(245,166,35,0.4)' : 'none',
+      }}>
+        <div style={{ position: 'relative', paddingTop: '62%', background: 'var(--surface-2)', overflow: 'hidden' }}>
+          {img ? (
+            <img src={img} alt={vehicle.title}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.5rem' }}>
+              {vehicle.type === 'CAR' ? '🚗' : '🏍️'}
+            </div>
           )}
+
+          {/* Badges */}
+          <div style={{ position: 'absolute', top: 8, left: 8, display: 'flex', gap: 4 }}>
+            {isFeaturedSlot && (
+              <span style={{ background: 'rgba(245,166,35,0.95)', color: '#1A1A2E', fontSize: '0.65rem', fontWeight: 800, padding: '2px 7px', borderRadius: 99 }}>
+                ⚡ স্পন্সরড
+              </span>
+            )}
+            {vehicle.isFeatured && !isFeaturedSlot && (
+              <span className="badge-featured">⭐ ফিচার্ড</span>
+            )}
+          </div>
+
+          <span style={{
+            position: 'absolute', top: 8, right: 8,
+            background: vehicle.purpose === 'SALE' ? 'var(--green-deep)' : '#1D4ED8',
+            color: 'white', fontSize: '0.65rem', fontWeight: 700,
+            padding: '2px 7px', borderRadius: 99,
+          }}>
+            {vehicle.purpose === 'SALE' ? 'বিক্রয়' : 'ভাড়া'}
+          </span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <span className="text-green-600 font-bold text-base">৳ {formatPrice(vehicle.price)}</span>
-            {vehicle.purpose === 'RENT' && <span className="text-xs text-gray-500">/দিন</span>}
+        <div style={{ padding: '12px 14px' }}>
+          <div style={{ display: 'flex', gap: 5, marginBottom: 5 }}>
+            <span style={{ background: 'var(--surface-2)', fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: 99, color: 'var(--text-secondary)' }}>
+              {CONDITION_LABELS[vehicle.condition]}
+            </span>
+            <span style={{ background: 'var(--green-light)', color: 'var(--green-deep)', fontSize: '0.65rem', fontWeight: 700, padding: '2px 7px', borderRadius: 99 }}>
+              {vehicle.year}
+            </span>
           </div>
-          {vehicle.owner?.nidVerified && (
-            <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium">✓ যাচাই</span>
-          )}
+
+          <div style={{ fontWeight: 700, fontSize: '0.92rem', lineHeight: 1.35, marginBottom: 4 }}>
+            {vehicle.brand} {vehicle.model}
+          </div>
+
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+            📍 {vehicle.district?.nameBn}
+            {vehicle.mileage ? ` • ${vehicle.mileage.toLocaleString()} কিমি` : ''}
+          </div>
+
+          <div className="price-tag">
+            ৳ {Number(vehicle.price).toLocaleString('bn-BD')}
+            {vehicle.negotiable && (
+              <span style={{ fontSize: '0.68rem', fontWeight: 400, color: 'var(--text-muted)', marginLeft: 4 }}>আলোচনাসাপেক্ষ</span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

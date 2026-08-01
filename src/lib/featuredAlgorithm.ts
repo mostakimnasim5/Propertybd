@@ -33,15 +33,11 @@ export async function getRotatedFeaturedListings(
   const candidates = await prisma.featuredListing.findMany({
     where: {
       status: 'ACTIVE',
-      // Budget শেষ হয়নি
-      budgetSpent: { lt: prisma.featuredListing.fields.totalBudget },
-      // endDate পার হয়নি
       OR: [
         { endDate: null },
         { endDate: { gt: new Date() } },
       ],
       // Context-based targeting
-      // null মানে সব জায়গায় চলবে
       AND: [
         {
           OR: [
@@ -74,10 +70,15 @@ export async function getRotatedFeaturedListings(
     },
   })
 
-  if (candidates.length === 0) return []
+  // Filter out exhausted budgets in memory (Prisma can't compare two fields directly)
+  const activeCandidates = candidates.filter(f =>
+    Number(f.budgetSpent) < Number(f.totalBudget)
+  )
+
+  if (activeCandidates.length === 0) return []
 
   // Step 2: RankScore calculate করো
-  const ranked = candidates.map(f => {
+  const ranked = activeCandidates.map(f => {
     const bid = Number(f.bidPerDay)
     const relevance = f.relevanceScore || 0.5
     const ctr = f.ctr || 0
@@ -113,7 +114,7 @@ export async function getRotatedFeaturedListings(
 
   // Step 4: Impression log করো (background, non-blocking)
   logImpressions(
-    selected.map(s => s.featuredId),
+    selected.map(s => ({ featuredId: s.featuredId, listingId: s.listingId })),
     ctx.districtId
   ).catch(console.error)
 
@@ -154,22 +155,24 @@ function weightedRandomSelect<T extends { rankScore: number }>(
 /**
  * Impression log — async, background
  */
-async function logImpressions(featuredIds: string[], districtId?: number) {
-  if (featuredIds.length === 0) return
+async function logImpressions(
+  featuredItems: { featuredId: string; listingId: string }[],
+  districtId?: number
+) {
+  if (featuredItems.length === 0) return
 
   await prisma.impressionLog.createMany({
-    data: featuredIds.map(featuredId => ({
-      listingId: '', // will be filled by featuredId lookup
-      featuredId,
+    data: featuredItems.map(item => ({
+      listingId: item.listingId,
+      featuredId: item.featuredId,
       source: 'SEARCH',
       isClick: false,
       districtId: districtId || null,
     })),
   })
 
-  // Increment impression counters
   await prisma.featuredListing.updateMany({
-    where: { id: { in: featuredIds } },
+    where: { id: { in: featuredItems.map(i => i.featuredId) } },
     data: { impressions: { increment: 1 } },
   })
 }
