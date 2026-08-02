@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
       totalUsers, totalListings, pendingListings,
       totalVehicles, pendingVehicles,
       totalLeads, totalConstruction,
+      totalProjects,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.listing.count({ where: { status: 'ACTIVE' } }),
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
       pendingVehicles,
       totalLeads,
       totalConstruction,
+      totalProjects,
     })
   } catch (error) {
     console.error('Admin stats error:', error)

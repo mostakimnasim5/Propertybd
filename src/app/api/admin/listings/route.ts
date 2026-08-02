@@ -109,3 +109,4 @@ export async function PATCH(req: NextRequest) {
     return errorResponse('সার্ভার সমস্যা', 500)
   }
 }
+// Note: project category handled via /api/admin/listings with category=project

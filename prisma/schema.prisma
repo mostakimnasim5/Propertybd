@@ -25,12 +25,15 @@ model User {
   listings      Listing[]
   vehicles      Vehicle[]
   constructions Construction[]
+  projects      Project[]
   savedListings SavedListing[]
   reviews       Review[]
   subscription  Subscription?
   otps          OTP[]
   leadsUnlocked LeadUnlock[]
   featuredSlots FeaturedListing[]
+  developerProjects DeveloperProject[]
+  projects      DeveloperProject[]
 }
 
 enum UserRole {
@@ -70,6 +73,8 @@ model District {
   listings   Listing[]
   vehicles   Vehicle[]
   constructions Construction[]
+  projects   DeveloperProject[]
+  projects      Project[]
 }
 
 model Upazila {
@@ -235,8 +240,102 @@ model Construction {
   ownerId      String
   reviews      Review[]
   leads        LeadUnlock[]
+  projects     DeveloperProject[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+// ─── DEVELOPER PROJECT ─────────────────────────
+
+model DeveloperProject {
+  id              String          @id @default(cuid())
+  title           String
+  description     String          @db.Text
+  projectType     ProjectType     @default(RESIDENTIAL)
+  status          ProjectStatus   @default(ONGOING)
+
+  // Location
+  address         String
+  district        District        @relation(fields: [districtId], references: [id])
+  districtId      Int
+  areaName        String?
+  mapLat          Float?
+  mapLng          Float?
+
+  // Project details
+  totalUnits      Int
+  availableUnits  Int
+  floorCount      Int?
+  landArea        String?         // e.g. "10 katha"
+  handoverDate    DateTime?
+  startDate       DateTime?
+
+  // Pricing
+  pricePerSqft    Decimal?        @db.Decimal(10, 2)
+  minPrice        Decimal         @db.Decimal(12, 2)
+  maxPrice        Decimal         @db.Decimal(12, 2)
+
+  // Media
+  coverImage      String?
+  images          ProjectImage[]
+  floorPlan       String?         // Cloudinary URL
+
+  // Amenities (JSON array)
+  amenities       String          @db.Text  // JSON
+
+  // Relations
+  construction    Construction    @relation(fields: [constructionId], references: [id])
+  constructionId  String
+  units           ProjectUnit[]
+
+  // Admin
+  isVerified      Boolean         @default(false)
+  isFeatured      Boolean         @default(false)
+  viewCount       Int             @default(0)
+  listingStatus   ListingStatus   @default(PENDING)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model ProjectImage {
+  id        String           @id @default(cuid())
+  url       String
+  caption   String?
+  isPrimary Boolean          @default(false)
+  project   DeveloperProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
+
+model ProjectUnit {
+  id          String           @id @default(cuid())
+  unitType    String           // "2 Bed", "3 Bed", "Studio"
+  floor       Int?
+  size        Float            // sqft
+  price       Decimal          @db.Decimal(12, 2)
+  status      UnitStatus       @default(AVAILABLE)
+  project     DeveloperProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  createdAt   DateTime         @default(now())
+}
+
+enum ProjectType {
+  RESIDENTIAL   // আবাসিক
+  COMMERCIAL    // বাণিজ্যিক
+  MIXED         // মিশ্র
+}
+
+enum ProjectStatus {
+  UPCOMING      // শীঘ্রই আসছে
+  ONGOING       // নির্মাণাধীন
+  READY         // রেডি টু মুভ
+  COMPLETED     // সম্পন্ন
+}
+
+enum UnitStatus {
+  AVAILABLE     // পাওয়া যাচ্ছে
+  BOOKED        // বায়না হয়েছে
+  SOLD          // বিক্রিত
 }
 
 model PortfolioItem {
@@ -370,4 +469,254 @@ enum ImpressionSource {
   SEARCH          // search results page
   SIMILAR         // similar listings section
   DIRECT          // direct listing URL
+}
+
+// ─── BUILDER / DEVELOPER PROJECTS ──────────────
+
+model Project {
+  id              String         @id @default(cuid())
+  title           String
+  description     String         @db.Text
+  projectType     ProjectType    @default(RESIDENTIAL)
+  status          ProjectStatus  @default(UPCOMING)
+
+  // Units info
+  totalUnits      Int
+  availableUnits  Int
+  handoverDate    DateTime?
+
+  // Location
+  address         String
+  district        District       @relation(fields: [districtId], references: [id])
+  districtId      Int
+  areaName        String?
+  mapLat          Float?
+  mapLng          Float?
+
+  // Media
+  coverImage      String?
+  floorPlanImage  String?
+  images          ProjectImage[]
+
+  // Unit types (1bed, 2bed, 3bed etc.)
+  units           ProjectUnit[]
+
+  // Developer
+  developer       User           @relation(fields: [developerId], references: [id])
+  developerId     String
+
+  // Stats
+  isFeatured      Boolean        @default(false)
+  viewCount       Int            @default(0)
+  status2         ListingStatus  @default(PENDING)
+
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model ProjectUnit {
+  id           String   @id @default(cuid())
+  unitType     String   // "১ বেডরুম", "২ বেডরুম", "পেন্টহাউস"
+  area         Float    // sqft
+  price        Decimal  @db.Decimal(12, 2)
+  totalCount   Int
+  available    Int
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId    String
+}
+
+model ProjectImage {
+  id        String  @id @default(cuid())
+  url       String
+  caption   String?
+  isPrimary Boolean @default(false)
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
+
+enum ProjectType {
+  RESIDENTIAL   // আবাসিক
+  COMMERCIAL    // বাণিজ্যিক
+  MIXED         // মিশ্র
+}
+
+enum ProjectStatus {
+  UPCOMING      // আসছে শীঘ্রই
+  ONGOING       // নির্মাণ চলছে
+  READY         // হস্তান্তরযোগ্য
+  SOLD_OUT      // বিক্রি শেষ
+}
+
+// ─── DEVELOPER / BUILDER PROJECT ───────────────
+
+model DeveloperProject {
+  id              String        @id @default(cuid())
+
+  // Company info
+  companyName     String
+  companyLogo     String?
+
+  // Project info
+  projectName     String
+  description     String        @db.Text
+  projectType     ProjectType
+  status          ProjectStatus @default(ONGOING)
+
+  // Location
+  district        District      @relation(fields: [districtId], references: [id])
+  districtId      Int
+  address         String
+  areaName        String?
+  mapLat          Float?
+  mapLng          Float?
+
+  // Units
+  totalUnits      Int
+  availableUnits  Int
+  minPrice        Decimal       @db.Decimal(12, 2)
+  maxPrice        Decimal       @db.Decimal(12, 2)
+  minSize         Float?        // sqft
+  maxSize         Float?        // sqft
+
+  // Timeline
+  startDate       DateTime?
+  handoverDate    DateTime?
+
+  // Amenities (JSON array)
+  amenities       String        @db.Text
+
+  // Media
+  coverImage      String?
+  projectImages   ProjectImage[]
+  floorPlans      FloorPlan[]
+
+  // Admin
+  listingStatus   ListingStatus @default(PENDING)
+  isFeatured      Boolean       @default(false)
+  viewCount       Int           @default(0)
+
+  owner           User          @relation(fields: [ownerId], references: [id])
+  ownerId         String
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model ProjectImage {
+  id        String          @id @default(cuid())
+  url       String
+  caption   String?
+  isPrimary Boolean         @default(false)
+  project   DeveloperProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
+
+model FloorPlan {
+  id        String          @id @default(cuid())
+  title     String          // "২ বেডরুম - টাইপ A"
+  imageUrl  String
+  size      Float?          // sqft
+  bedrooms  Int?
+  bathrooms Int?
+  price     Decimal?        @db.Decimal(12, 2)
+  project   DeveloperProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
+
+enum ProjectType {
+  APARTMENT       // ফ্ল্যাট প্রজেক্ট
+  COMMERCIAL      // কমার্শিয়াল
+  HOUSING_ESTATE  // আবাসিক এলাকা
+  VILLA           // ভিলা
+  MIXED_USE       // মিশ্র
+}
+
+enum ProjectStatus {
+  UPCOMING        // আসছে
+  ONGOING         // নির্মাণাধীন
+  READY           // হস্তান্তর প্রস্তুত
+  HANDED_OVER     // হস্তান্তর সম্পন্ন
+}
+
+// ─── DEVELOPER / BUILDER PROJECTS ──────────────
+
+model DeveloperProject {
+  id              String          @id @default(cuid())
+  owner           User            @relation(fields: [ownerId], references: [id])
+  ownerId         String
+
+  // Company & Project info
+  companyName     String
+  projectName     String
+  description     String          @db.Text
+  coverImage      String?
+  images          ProjectImage[]
+
+  // Location
+  district        District        @relation(fields: [districtId], references: [id])
+  districtId      Int
+  areaName        String?
+  address         String?
+  mapLat          Float?
+  mapLng          Float?
+
+  // Project details
+  totalUnits      Int
+  availableUnits  Int
+  projectType     ProjectType     @default(RESIDENTIAL)
+  handoverDate    DateTime?
+  floorPlan       String?         // image URL
+  amenities       String?         @db.Text  // JSON array
+
+  // Pricing
+  minPrice        Decimal         @db.Decimal(12, 2)
+  maxPrice        Decimal         @db.Decimal(12, 2)
+  pricePerSqft    Decimal?        @db.Decimal(8, 2)
+
+  // Status
+  status          ListingStatus   @default(PENDING)
+  isFeatured      Boolean         @default(false)
+  viewCount       Int             @default(0)
+
+  units           ProjectUnit[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+enum ProjectType {
+  RESIDENTIAL    // আবাসিক
+  COMMERCIAL     // বাণিজ্যিক
+  MIXED          // মিশ্র
+}
+
+model ProjectImage {
+  id        String           @id @default(cuid())
+  url       String
+  isPrimary Boolean          @default(false)
+  project   DeveloperProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+}
+
+model ProjectUnit {
+  id          String           @id @default(cuid())
+  project     DeveloperProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+
+  unitNumber  String           // যেমন: A-101, B-202
+  floor       Int
+  size        Float            // sqft
+  bedrooms    Int?
+  bathrooms   Int?
+  price       Decimal          @db.Decimal(12, 2)
+  facing      String?
+  status      UnitStatus       @default(AVAILABLE)
+
+  createdAt   DateTime         @default(now())
+}
+
+enum UnitStatus {
+  AVAILABLE
+  BOOKED
+  SOLD
 }
