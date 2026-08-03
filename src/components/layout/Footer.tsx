@@ -24,6 +24,14 @@ export default function Footer() {
               ]
             },
             {
+              title: 'নতুন প্রজেক্ট', links: [
+                { href: '/projects', label: 'সব প্রজেক্ট' },
+                { href: '/projects?projectType=RESIDENTIAL', label: 'আবাসিক প্রজেক্ট' },
+                { href: '/projects?projectType=COMMERCIAL', label: 'বাণিজ্যিক প্রজেক্ট' },
+                { href: '/projects?status=READY', label: 'রেডি টু মুভ' },
+              ]
+            },
+            {
               title: 'গাড়ি', links: [
                 { href: '/vehicles?type=CAR&purpose=SALE', label: 'গাড়ি বিক্রি' },
                 { href: '/vehicles?type=CAR&purpose=RENT', label: 'গাড়ি ভাড়া' },

@@ -10,8 +10,9 @@ export default function HomePage() {
   const t = useT()
   const CATEGORIES = [
     { id: "property", label: t.categories.property, icon: "🏠", sub: t.categories.propertySub },
+    { id: "project", label: "নতুন প্রজেক্ট", icon: "🏗️", sub: "Developer • Builder" },
     { id: "vehicle", label: t.categories.vehicle, icon: "🚗", sub: t.categories.vehicleSub },
-    { id: "construction", label: t.categories.construction, icon: "🏗️", sub: t.categories.constructionSub },
+    { id: "construction", label: t.categories.construction, icon: "🔨", sub: t.categories.constructionSub },
   ]
   const PURPOSES = [
     { id: "ALL", label: t.home.all },
@@ -34,6 +35,7 @@ export default function HomePage() {
   const [featuredListings, setFeaturedListings] = useState<any[]>([])
   const [sponsoredListings, setSponsoredListings] = useState<any[]>([])
   const [featuredVehicles, setFeaturedVehicles] = useState<any[]>([])
+  const [newProjects, setNewProjects] = useState<any[]>([])
   const [loadingListings, setLoadingListings] = useState(true)
 
   useEffect(() => {
@@ -47,6 +49,10 @@ export default function HomePage() {
     axios.get('/api/featured/listings?limit=3').then(r => {
       setSponsoredListings(r.data.data.listings || [])
     }).catch(() => {})
+    // New developer projects
+    axios.get('/api/projects/search?limit=3').then(r => {
+      setNewProjects(r.data.data.projects || [])
+    }).catch(() => {})
   }, [])
 
   const districts = divisions.find(d => d.id.toString() === selectedDivision)?.districts || []
@@ -58,6 +64,7 @@ export default function HomePage() {
     if (purpose !== 'ALL') params.set('purpose', purpose)
     if (category === 'vehicle') return router.push(`/vehicles?${params}`)
     if (category === 'construction') return router.push(`/construction?${params}`)
+    if (category === 'project') return router.push(`/projects?${params}`)
     router.push(`/properties?${params}`)
   }
 
@@ -218,6 +225,61 @@ export default function HomePage() {
             </div>
             <div className="grid-auto">
               {featuredVehicles.map(v => <VehicleCard key={v.id} vehicle={v} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── New Developer Projects ───────────────── */}
+      {newProjects.length > 0 && (
+        <section style={{ padding: 'clamp(36px, 8vw, 56px) 0', background: 'var(--surface)' }}>
+          <div className="container">
+            <div className="flex-between" style={{ marginBottom: 20 }}>
+              <div>
+                <div className="section-title">নতুন Developer প্রজেক্ট</div>
+                <div className="section-sub" style={{ marginBottom: 0 }}>
+                  সেরা Builder-দের আবাসিক ও বাণিজ্যিক প্রজেক্ট
+                </div>
+              </div>
+              <a href="/projects" style={{ color: 'var(--green-deep)', fontWeight: 700, textDecoration: 'none', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                সব দেখুন →
+              </a>
+            </div>
+            <div className="grid-3" style={{ gap: 20 }}>
+              {newProjects.map((p: any) => {
+                const img = p.images?.[0]?.url
+                return (
+                  <a key={p.id} href={`/projects/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                    <div className="card" style={{ cursor: 'pointer' }}>
+                      <div style={{ position: 'relative', paddingTop: '55%', background: 'linear-gradient(135deg, var(--green-light), #c8e6d4)', overflow: 'hidden' }}>
+                        {img
+                          ? <img src={img} alt={p.title} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>🏗️</div>
+                        }
+                        <span style={{ position: 'absolute', bottom: 8, right: 8, background: 'rgba(0,0,0,0.65)', color: 'white', fontSize: '0.62rem', fontWeight: 700, padding: '2px 7px', borderRadius: 99 }}>
+                          {p.availableUnits}/{p.totalUnits} unit
+                        </span>
+                      </div>
+                      <div style={{ padding: '12px 14px' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 4, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                          {p.title}
+                        </div>
+                        {p.construction?.companyName && (
+                          <div style={{ fontSize: '0.72rem', color: 'var(--green-deep)', fontWeight: 600, marginBottom: 4 }}>
+                            🏢 {p.construction.companyName}
+                          </div>
+                        )}
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 8 }}>
+                          📍 {p.areaName ? `${p.areaName}, ` : ''}{p.district?.nameBn}
+                        </div>
+                        <div className="price-tag" style={{ fontSize: '0.9rem' }}>
+                          ৳ {Number(p.minPrice).toLocaleString('bn-BD')} থেকে
+                        </div>
+                      </div>
+                    </div>
+                  </a>
+                )
+              })}
             </div>
           </div>
         </section>

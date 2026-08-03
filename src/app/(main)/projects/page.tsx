@@ -1,31 +1,23 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
-import Link from 'next/link'
 import axios from 'axios'
+import ProjectCard from '@/components/project/ProjectCard'
 import Pagination from '@/components/common/Pagination'
 
-const PROJECT_TYPES = [
+const STATUSES = [
+  { id: '', label: 'সব' },
+  { id: 'UPCOMING', label: '🔜 শীঘ্রই' },
+  { id: 'ONGOING', label: '🏗️ নির্মাণাধীন' },
+  { id: 'READY', label: '✅ রেডি' },
+  { id: 'COMPLETED', label: '🏁 সম্পন্ন' },
+]
+
+const TYPES = [
   { id: '', label: 'সব ধরন' },
-  { id: 'APARTMENT', label: 'ফ্ল্যাট প্রজেক্ট' },
-  { id: 'COMMERCIAL', label: 'কমার্শিয়াল' },
-  { id: 'HOUSING_ESTATE', label: 'আবাসিক এলাকা' },
-  { id: 'VILLA', label: 'ভিলা' },
+  { id: 'RESIDENTIAL', label: '🏠 আবাসিক' },
+  { id: 'COMMERCIAL', label: '🏢 বাণিজ্যিক' },
+  { id: 'MIXED', label: '🏙️ মিশ্র' },
 ]
-
-const PROJECT_STATUS = [
-  { id: '', label: 'সব অবস্থা' },
-  { id: 'UPCOMING', label: 'আসছে' },
-  { id: 'ONGOING', label: 'নির্মাণাধীন' },
-  { id: 'READY', label: 'হস্তান্তর প্রস্তুত' },
-  { id: 'HANDED_OVER', label: 'হস্তান্তর সম্পন্ন' },
-]
-
-const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  UPCOMING: { label: 'আসছে', color: '#7C3AED', bg: '#EDE9FE' },
-  ONGOING: { label: 'নির্মাণাধীন', color: '#D97706', bg: '#FEF3C7' },
-  READY: { label: 'হস্তান্তর প্রস্তুত', color: '#166A47', bg: '#D1FAE5' },
-  HANDED_OVER: { label: 'হস্তান্তর সম্পন্ন', color: '#6B7280', bg: '#F3F4F6' },
-}
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<any[]>([])
@@ -33,7 +25,12 @@ export default function ProjectsPage() {
   const [totalPages, setTotalPages] = useState(1)
   const [loading, setLoading] = useState(true)
   const [divisions, setDivisions] = useState<any[]>([])
-  const [filters, setFilters] = useState({ type: '', status: '', divisionId: '', districtId: '', search: '', page: 1 })
+
+  const [filters, setFilters] = useState({
+    divisionId: '', districtId: '',
+    projectType: '', status: '',
+    search: '', page: 1,
+  })
 
   const districts = divisions.find((d: any) => d.id.toString() === filters.divisionId)?.districts || []
 
@@ -41,136 +38,116 @@ export default function ProjectsPage() {
     axios.get('/api/locations').then(r => setDivisions(r.data.data.divisions)).catch(() => {})
   }, [])
 
-  const fetch = useCallback(async () => {
+  const fetchProjects = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       Object.entries(filters).forEach(([k, v]) => { if (v) params.set(k, v.toString()) })
       const res = await axios.get(`/api/projects/search?${params}`)
-      setProjects(res.data.data.projects)
+      setProjects(res.data.data.projects || [])
       setTotal(res.data.data.pagination.total)
       setTotalPages(res.data.data.pagination.totalPages)
     } catch { setProjects([]) }
     finally { setLoading(false) }
   }, [filters])
 
-  useEffect(() => { fetch() }, [fetch])
+  useEffect(() => { fetchProjects() }, [fetchProjects])
 
   const set = (k: string, v: string) => setFilters(p => ({ ...p, [k]: v, page: 1 }))
 
   return (
-    <div style={{ padding: '24px 0', minHeight: '70vh' }}>
-      <div className="container">
-        {/* Header */}
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 'clamp(1.2rem, 4vw, 1.6rem)', fontWeight: 800, color: 'var(--green-deep)', marginBottom: 4 }}>
-            🏗️ Developer Projects — {total}টি
+    <div style={{ minHeight: '70vh' }}>
+      {/* Hero */}
+      <div style={{ background: 'linear-gradient(135deg, var(--green-deep) 0%, #1a6b47 100%)', padding: '36px 0' }}>
+        <div className="container">
+          <h1 style={{ color: 'white', fontSize: 'clamp(1.4rem, 4vw, 2rem)', fontWeight: 800, marginBottom: 8 }}>
+            🏗️ নতুন প্রজেক্ট ও ডেভলপার
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
-            বাংলাদেশের সেরা real estate developer-দের নতুন প্রজেক্ট
+          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.95rem', marginBottom: 20 }}>
+            বাংলাদেশের সেরা Developer-দের নতুন residential ও commercial project
           </p>
-        </div>
 
-        {/* Filters */}
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 16, marginBottom: 24 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10, marginBottom: 12 }}>
-            <select value={filters.divisionId} onChange={e => { set('divisionId', e.target.value); set('districtId', '') }}>
-              <option value="">সব বিভাগ</option>
+          {/* Search bar */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr auto', gap: 8, maxWidth: 700 }}>
+            <select value={filters.divisionId}
+              onChange={e => { set('divisionId', e.target.value); set('districtId', '') }}
+              style={{ borderRadius: 8, border: 'none', padding: '10px 12px', fontSize: '0.9rem' }}>
+              <option value="">বিভাগ</option>
               {divisions.map((d: any) => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
             </select>
-            <select value={filters.districtId} onChange={e => set('districtId', e.target.value)} disabled={!filters.divisionId}>
-              <option value="">সব জেলা</option>
+            <select value={filters.districtId} onChange={e => set('districtId', e.target.value)}
+              disabled={!filters.divisionId}
+              style={{ borderRadius: 8, border: 'none', padding: '10px 12px', fontSize: '0.9rem' }}>
+              <option value="">জেলা</option>
               {districts.map((d: any) => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
             </select>
-            <select value={filters.type} onChange={e => set('type', e.target.value)}>
-              {PROJECT_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
-            </select>
-            <select value={filters.status} onChange={e => set('status', e.target.value)}>
-              {PROJECT_STATUS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
-            </select>
+            <input placeholder="Project বা Developer খুঁজুন..."
+              value={filters.search} onChange={e => set('search', e.target.value)}
+              style={{ borderRadius: 8, border: 'none', padding: '10px 12px', fontSize: '0.9rem' }} />
+            <button onClick={fetchProjects}
+              style={{ background: 'var(--amber)', color: '#1A1A2E', borderRadius: 8, border: 'none', padding: '10px 18px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.9rem' }}>
+              🔍
+            </button>
           </div>
-          <input placeholder="প্রজেক্ট বা কোম্পানির নাম খুঁজুন..."
-            value={filters.search} onChange={e => set('search', e.target.value)} />
         </div>
+      </div>
 
-        {/* Projects Grid */}
-        {loading ? (
-          <div className="grid-auto">
-            {[...Array(6)].map((_, i) => <div key={i} style={{ height: 300, background: 'var(--surface-2)', borderRadius: 14 }} />)}
+      <div style={{ padding: '28px 0' }}>
+        <div className="container">
+          {/* Status + Type filters */}
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20, alignItems: 'center' }}>
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginRight: 4 }}>অবস্থা:</span>
+            {STATUSES.map(s => (
+              <button key={s.id} onClick={() => set('status', s.id)} style={{
+                padding: '5px 14px', borderRadius: 99, fontFamily: 'inherit',
+                border: `1.5px solid ${filters.status === s.id ? 'var(--green-deep)' : 'var(--border)'}`,
+                background: filters.status === s.id ? 'var(--green-deep)' : 'white',
+                color: filters.status === s.id ? 'white' : 'var(--text-secondary)',
+                fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
+              }}>{s.label}</button>
+            ))}
+
+            <div style={{ width: 1, background: 'var(--border)', height: 20, margin: '0 4px' }} />
+
+            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginRight: 4 }}>ধরন:</span>
+            {TYPES.map(t => (
+              <button key={t.id} onClick={() => set('projectType', t.id)} style={{
+                padding: '5px 14px', borderRadius: 99, fontFamily: 'inherit',
+                border: `1.5px solid ${filters.projectType === t.id ? 'var(--green-deep)' : 'var(--border)'}`,
+                background: filters.projectType === t.id ? 'var(--green-light)' : 'white',
+                color: filters.projectType === t.id ? 'var(--green-deep)' : 'var(--text-secondary)',
+                fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
+              }}>{t.label}</button>
+            ))}
+
+            <span style={{ marginLeft: 'auto', fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+              {total}টি project
+            </span>
           </div>
-        ) : projects.length > 0 ? (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 20, marginBottom: 32 }}>
-              {projects.map(p => {
-                const statusCfg = STATUS_CONFIG[p.status] || STATUS_CONFIG.ONGOING
-                const img = p.projectImages?.[0]?.url
 
-                return (
-                  <Link key={p.id} href={`/projects/${p.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                    <div className="card" style={{ cursor: 'pointer' }}>
-                      {/* Cover image */}
-                      <div style={{ position: 'relative', paddingTop: '55%', background: 'linear-gradient(135deg, #e8f5ee, #d1e8da)', overflow: 'hidden' }}>
-                        {img ? (
-                          <img src={img} alt={p.projectName} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                        ) : (
-                          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem' }}>🏢</div>
-                        )}
-                        {/* Status badge */}
-                        <span style={{ position: 'absolute', top: 10, left: 10, background: statusCfg.bg, color: statusCfg.color, fontSize: '0.68rem', fontWeight: 800, padding: '3px 9px', borderRadius: 99 }}>
-                          {statusCfg.label}
-                        </span>
-                        {p.isFeatured && (
-                          <span style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(245,166,35,0.95)', color: '#1A1A2E', fontSize: '0.68rem', fontWeight: 800, padding: '3px 9px', borderRadius: 99 }}>
-                            ⭐ ফিচার্ড
-                          </span>
-                        )}
-                      </div>
-
-                      <div style={{ padding: '16px 18px' }}>
-                        {/* Company */}
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: 4, fontWeight: 600 }}>
-                          🏢 {p.companyName}
-                        </div>
-
-                        {/* Project name */}
-                        <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: 6, lineHeight: 1.3 }}>
-                          {p.projectName}
-                        </div>
-
-                        {/* Location */}
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: 10 }}>
-                          📍 {p.areaName ? `${p.areaName}, ` : ''}{p.district?.nameBn}
-                        </div>
-
-                        {/* Stats row */}
-                        <div style={{ display: 'flex', gap: 12, fontSize: '0.78rem', color: 'var(--text-secondary)', marginBottom: 12 }}>
-                          <span>🏠 {p.totalUnits}টি unit</span>
-                          <span>✅ {p.availableUnits}টি বাকি</span>
-                          {p.handoverDate && (
-                            <span>📅 {new Date(p.handoverDate).getFullYear()}</span>
-                          )}
-                        </div>
-
-                        {/* Price range */}
-                        <div style={{ fontWeight: 800, color: 'var(--green-deep)', fontSize: '0.95rem' }}>
-                          ৳ {Number(p.minPrice).toLocaleString('bn-BD')}
-                          {Number(p.maxPrice) > Number(p.minPrice) && ` — ৳ ${Number(p.maxPrice).toLocaleString('bn-BD')}`}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
+          {/* Grid */}
+          {loading ? (
+            <div className="grid-auto">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} style={{ height: 300, background: 'var(--surface-2)', borderRadius: 12 }} />
+              ))}
             </div>
-            <Pagination current={filters.page} total={totalPages} onChange={p => setFilters(prev => ({ ...prev, page: p }))} />
-          </>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: '4rem', marginBottom: 16 }}>🏗️</div>
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>কোনো প্রজেক্ট পাওয়া যায়নি</div>
-            <div style={{ fontSize: '0.88rem' }}>অন্য ফিল্টার দিয়ে চেষ্টা করুন</div>
-          </div>
-        )}
+          ) : projects.length > 0 ? (
+            <>
+              <div className="grid-auto" style={{ marginBottom: 28 }}>
+                {projects.map(p => <ProjectCard key={p.id} project={p} />)}
+              </div>
+              <Pagination current={filters.page} total={totalPages}
+                onChange={p => setFilters(prev => ({ ...prev, page: p }))} />
+            </>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
+              <div style={{ fontSize: '4rem', marginBottom: 16 }}>🏗️</div>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>কোনো project পাওয়া যায়নি</div>
+              <div style={{ fontSize: '0.88rem' }}>অন্য ফিল্টার দিয়ে চেষ্টা করুন</div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

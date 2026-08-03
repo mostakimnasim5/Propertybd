@@ -7,8 +7,9 @@ import { useLang } from '@/contexts/LanguageContext'
 
 const NAV_LINKS = [
   { href: '/properties', label: '🏠 প্রপার্টি' },
+  { href: '/projects', label: '🏗️ নতুন প্রজেক্ট' },
   { href: '/vehicles', label: '🚗 গাড়ি' },
-  { href: '/construction', label: '🏗️ নির্মাণ' },
+  { href: '/construction', label: '🔨 নির্মাণ' },
 ]
 
 export default function Navbar() {
