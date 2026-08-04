@@ -8,13 +8,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: appUrl, changeFrequency: 'daily', priority: 1 },
     { url: `${appUrl}/properties`, changeFrequency: 'hourly', priority: 0.9 },
     { url: `${appUrl}/vehicles`, changeFrequency: 'hourly', priority: 0.9 },
+    { url: `${appUrl}/projects`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${appUrl}/construction`, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${appUrl}/subscription`, changeFrequency: 'monthly', priority: 0.6 },
     { url: `${appUrl}/about`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${appUrl}/contact`, changeFrequency: 'monthly', priority: 0.4 },
   ]
 
   try {
-    const [listings, vehicles, companies] = await Promise.all([
+    const [listings, vehicles, companies, projects] = await Promise.all([
       prisma.listing.findMany({
         where: { status: 'ACTIVE' },
         select: { id: true, updatedAt: true },
@@ -29,6 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
       prisma.construction.findMany({
         where: { status: 'ACTIVE' },
+        select: { id: true, updatedAt: true },
+        take: 500,
+        orderBy: { updatedAt: 'desc' },
+      }),
+      prisma.developerProject.findMany({
+        where: { listingStatus: 'ACTIVE' },
         select: { id: true, updatedAt: true },
         take: 500,
         orderBy: { updatedAt: 'desc' },
@@ -56,7 +64,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }))
 
-    return [...staticPages, ...listingPages, ...vehiclePages, ...constructionPages]
+    const projectPages: MetadataRoute.Sitemap = projects.map(p => ({
+      url: `${appUrl}/projects/${p.id}`,
+      lastModified: p.updatedAt,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    }))
+
+    return [...staticPages, ...listingPages, ...vehiclePages, ...constructionPages, ...projectPages]
   } catch {
     return staticPages
   }
