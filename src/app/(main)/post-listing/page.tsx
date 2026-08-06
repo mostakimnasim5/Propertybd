@@ -100,6 +100,15 @@ export default function PostListingPage() {
     <div style={{ padding: '32px 0', minHeight: '70vh' }}>
       <div className="container" style={{ maxWidth: 720 }}>
         <h1 style={{ fontSize: '1.6rem', fontWeight: 800, marginBottom: 8, color: 'var(--green-deep)' }}>+ নতুন বিজ্ঞাপন দিন</h1>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 4, fontSize: '0.9rem' }}>
+          বিজ্ঞাপন অনুমোদনের পর সর্বসাধারণের কাছে প্রকাশিত হবে।
+        </p>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 28 }}>
+          Developer বা Builder?{' '}
+          <a href="/post-project" style={{ color: 'var(--green-deep)', fontWeight: 700, textDecoration: 'none' }}>
+            🏗️ নতুন Project দিন →
+          </a>
+        </p>
         <p style={{ color: 'var(--text-secondary)', marginBottom: 28 }}>বিজ্ঞাপন অনুমোদনের পর সর্বসাধারণের কাছে প্রকাশিত হবে।</p>
 
         {/* Category select */}

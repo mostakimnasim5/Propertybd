@@ -52,9 +52,26 @@ export default function Navbar() {
               <>
                 {user ? (
                   <>
-                    <Link href="/post-listing" className="btn-primary nav-post-btn" style={{ padding: '7px 14px', fontSize: '0.85rem', textDecoration: 'none' }}>
-                      + বিজ্ঞাপন
-                    </Link>
+                    {/* Split post button — dropdown */}
+                    <div style={{ position: 'relative' }} className="nav-post-btn">
+                      <div style={{ display: 'flex', gap: 0 }}>
+                        <Link href="/post-listing" style={{
+                          padding: '7px 12px', fontSize: '0.82rem', textDecoration: 'none',
+                          background: 'var(--green-deep)', color: 'white', fontWeight: 700,
+                          borderRadius: '8px 0 0 8px', display: 'flex', alignItems: 'center', gap: 4,
+                        }}>
+                          + বিজ্ঞাপন
+                        </Link>
+                        <Link href="/post-project" style={{
+                          padding: '7px 10px', fontSize: '0.82rem', textDecoration: 'none',
+                          background: 'var(--amber)', color: '#1A1A2E', fontWeight: 700,
+                          borderRadius: '0 8px 8px 0', display: 'flex', alignItems: 'center',
+                          borderLeft: '1px solid rgba(255,255,255,0.3)',
+                        }} title="নতুন Project দিন">
+                          🏗️
+                        </Link>
+                      </div>
+                    </div>
                     <div style={{ position: 'relative' }}>
                       <button onClick={() => setDropOpen(!dropOpen)} style={{
                         width: 36, height: 36, borderRadius: '50%',
@@ -68,13 +85,14 @@ export default function Navbar() {
                           position: 'absolute', right: 0, top: 44,
                           background: 'white', borderRadius: 10,
                           border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)',
-                          minWidth: 180, zIndex: 200, overflow: 'hidden',
+                          minWidth: 190, zIndex: 200, overflow: 'hidden',
                         }}>
                           {[
                             { href: '/dashboard', label: '📊 ড্যাশবোর্ড' },
-                          { href: '/subscription', label: '👔 Subscription' },
+                            { href: '/subscription', label: '👔 Subscription' },
                             { href: '/saved', label: '❤️ সংরক্ষিত' },
                             { href: '/post-listing', label: '+ বিজ্ঞাপন দিন' },
+                            { href: '/post-project', label: '🏗️ Project দিন' },
                             ...(user.role === 'ADMIN' ? [{ href: '/admin/dashboard', label: '⚙️ অ্যাডমিন' }] : []),
                           ].map(item => (
                             <Link key={item.href} href={item.href} style={{ display: 'block', padding: '11px 16px', textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.9rem', borderBottom: '1px solid var(--border)' }}>
@@ -138,6 +156,7 @@ export default function Navbar() {
                 <>
                   <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="btn-outline" style={{ textDecoration: 'none', flex: 1, textAlign: 'center' }}>ড্যাশবোর্ড</Link>
                   <Link href="/post-listing" onClick={() => setMenuOpen(false)} className="btn-primary" style={{ textDecoration: 'none', flex: 1, textAlign: 'center', justifyContent: 'center' }}>+ বিজ্ঞাপন</Link>
+                  <Link href="/post-project" onClick={() => setMenuOpen(false)} style={{ textDecoration: 'none', padding: '10px 12px', borderRadius: 8, background: 'var(--amber)', color: '#1A1A2E', fontWeight: 700, fontSize: '0.85rem' }}>🏗️</Link>
                 </>
               ) : (
                 <Link href="/login" onClick={() => setMenuOpen(false)} className="btn-primary" style={{ textDecoration: 'none', flex: 1, justifyContent: 'center' }}>লগইন করুন</Link>
