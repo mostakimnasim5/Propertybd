@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken } from '@/lib/auth'
 
-const PROTECTED_ROUTES = ['/dashboard', '/post-listing', '/saved']
+const PROTECTED_ROUTES = ['/dashboard', '/post-listing', '/post-project', '/saved', '/subscription']
 const ADMIN_ROUTES = ['/admin']
 const AUTH_ROUTES = ['/login', '/register']
 
