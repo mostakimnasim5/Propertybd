@@ -19,7 +19,6 @@ export default function DashboardPage() {
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ listings: 0, vehicles: 0, projects: 0, pending: 0 })
-  const [showPostMenu, setShowPostMenu] = useState(false)
 
   // Fetch counts on mount
   useEffect(() => {
@@ -137,24 +136,53 @@ export default function DashboardPage() {
             </div>
 
             {/* Header with split post button */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--green-deep)' }}>আমার বিজ্ঞাপন</h1>
-              <div style={{ position: 'relative' }}>
-                <div style={{ display: 'flex', gap: 0 }}>
-                  <Link href="/post-listing" style={{
-                    padding: '8px 12px', fontSize: '0.85rem', textDecoration: 'none',
-                    background: 'var(--green-deep)', color: 'white', fontWeight: 700,
-                    borderRadius: '8px 0 0 8px',
-                  }}>+ বিজ্ঞাপন</Link>
-                  <Link href="/post-project" style={{
-                    padding: '8px 10px', fontSize: '0.85rem', textDecoration: 'none',
-                    background: 'var(--amber)', color: '#1A1A2E', fontWeight: 800,
-                    borderRadius: '0 8px 8px 0',
-                    borderLeft: '1px solid rgba(255,255,255,0.4)',
-                  }} title="নতুন Project দিন">🏗️</Link>
-                </div>
+              <div style={{ display: 'flex', gap: 0 }}>
+                <Link href="/post-listing" style={{
+                  padding: '8px 12px', fontSize: '0.85rem', textDecoration: 'none',
+                  background: 'var(--green-deep)', color: 'white', fontWeight: 700,
+                  borderRadius: '8px 0 0 8px',
+                }}>+ বিজ্ঞাপন</Link>
+                <Link href="/post-project" style={{
+                  padding: '8px 10px', fontSize: '0.85rem', textDecoration: 'none',
+                  background: 'var(--amber)', color: '#1A1A2E', fontWeight: 800,
+                  borderRadius: '0 8px 8px 0',
+                  borderLeft: '1px solid rgba(255,255,255,0.4)',
+                }} title="নতুন Project দিন">🏗️</Link>
               </div>
             </div>
+
+            {/* Project tab: builder info banner */}
+            {tab === 'project' && (
+              <div style={{
+                background: 'linear-gradient(135deg, var(--green-deep), #1a6b47)',
+                borderRadius: 12, padding: '16px 20px', marginBottom: 16,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                flexWrap: 'wrap', gap: 12,
+              }}>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 800, fontSize: '1rem', marginBottom: 4 }}>
+                    🏗️ Developer Dashboard
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem' }}>
+                    আপনার {stats.projects}টি Project • সব মিলিয়ে unit ও buyer দেখুন
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Link href="/projects" style={{
+                    padding: '7px 14px', borderRadius: 8, textDecoration: 'none',
+                    background: 'rgba(255,255,255,0.15)', color: 'white',
+                    fontWeight: 600, fontSize: '0.82rem',
+                  }}>Public view →</Link>
+                  <Link href="/post-project" style={{
+                    padding: '7px 14px', borderRadius: 8, textDecoration: 'none',
+                    background: 'var(--amber)', color: '#1A1A2E',
+                    fontWeight: 700, fontSize: '0.82rem',
+                  }}>+ নতুন Project</Link>
+                </div>
+              </div>
+            )}
 
             {/* Tabs */}
             <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '2px solid var(--border)', overflowX: 'auto' }}>
