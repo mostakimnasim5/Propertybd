@@ -16,16 +16,20 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const [tab, setTab] = useState<'property' | 'vehicle' | 'construction'>('property')
+  const [tab, setTab] = useState<'property' | 'vehicle' | 'construction' | 'project'>('property')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setLoading(true)
-    axios.get(`/api/users/listings?category=${tab}`)
+    const url = tab === 'project'
+      ? '/api/users/projects'
+      : `/api/users/listings?category=${tab}`
+
+    axios.get(url)
       .then(r => {
         const d = r.data.data
-        setItems(d.listings || d.vehicles || d.companies || [])
+        setItems(d.listings || d.vehicles || d.companies || d.projects || [])
       })
       .catch(() => setItems([]))
       .finally(() => setLoading(false))
@@ -34,6 +38,7 @@ export default function DashboardPage() {
   const getDetailLink = (item: any) => {
     if (tab === 'vehicle') return `/vehicles/${item.id}`
     if (tab === 'construction') return `/construction/${item.id}`
+    if (tab === 'project') return `/projects/${item.id}`
     return `/properties/${item.id}`
   }
 
@@ -91,18 +96,19 @@ export default function DashboardPage() {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 20, borderBottom: '2px solid var(--border)', paddingBottom: 0 }}>
+            <div style={{ display: 'flex', gap: 0, marginBottom: 20, borderBottom: '2px solid var(--border)', overflowX: 'auto' }}>
               {[
                 { id: 'property', label: '🏠 প্রপার্টি' },
                 { id: 'vehicle', label: '🚗 গাড়ি' },
-                { id: 'construction', label: '🏗️ নির্মাণ' },
+                { id: 'construction', label: '🔨 নির্মাণ' },
+                { id: 'project', label: '🏗️ Projects' },
               ].map(t => (
                 <button key={t.id} onClick={() => setTab(t.id as any)} style={{
-                  padding: '10px 18px', border: 'none', background: 'none',
-                  fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer', fontFamily: 'inherit',
+                  padding: '10px 16px', border: 'none', background: 'none',
+                  fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', fontFamily: 'inherit',
                   color: tab === t.id ? 'var(--green-deep)' : 'var(--text-secondary)',
                   borderBottom: `2px solid ${tab === t.id ? 'var(--green-deep)' : 'transparent'}`,
-                  marginBottom: -2,
+                  marginBottom: -2, whiteSpace: 'nowrap',
                 }}>
                   {t.label}
                 </button>
@@ -114,25 +120,41 @@ export default function DashboardPage() {
             ) : items.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {items.map((item: any) => {
-                  const status = STATUS_LABELS[item.status] || { label: item.status, color: '#6B7280' }
+                  // Project tab has different status field
+                  const statusKey = tab === 'project' ? item.listingStatus : item.status
+                  const status = STATUS_LABELS[statusKey] || { label: statusKey, color: '#6B7280' }
                   const img = item.images?.[0]?.url || null
-                  const title = item.title || item.companyName || `${item.brand} ${item.model}`
+                  const title = tab === 'project'
+                    ? item.title
+                    : (item.title || item.companyName || `${item.brand} ${item.model}`)
+
                   return (
                     <div key={item.id} style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
                       <div style={{ width: 80, height: 64, borderRadius: 8, background: 'var(--surface-2)', overflow: 'hidden', flexShrink: 0 }}>
-                        {img ? <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> :
-                          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                            {tab === 'vehicle' ? '🚗' : tab === 'construction' ? '🏗️' : '🏠'}
+                        {img
+                          ? <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+                            {tab === 'vehicle' ? '🚗' : tab === 'project' ? '🏗️' : tab === 'construction' ? '🔨' : '🏠'}
                           </div>}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontWeight: 700, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                          📍 {item.district?.name} • {new Date(item.createdAt).toLocaleDateString('bn-BD')}
+                        <div style={{ fontWeight: 700, marginBottom: 4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {title}
                         </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                          📍 {item.district?.nameBn || item.district?.name}
+                          {tab === 'project' && item._count?.units && ` • ${item._count.units}টি unit`}
+                          {tab === 'project' && item.construction?.companyName && ` • ${item.construction.companyName}`}
+                          {tab !== 'project' && ` • ${new Date(item.createdAt).toLocaleDateString('bn-BD')}`}
+                        </div>
+                        {tab === 'project' && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--green-deep)', fontWeight: 600, marginTop: 3 }}>
+                            👁️ {item.viewCount || 0} বার দেখা
+                          </div>
+                        )}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                        <span style={{ background: `${status.color}18`, color: status.color, fontSize: '0.75rem', fontWeight: 700, padding: '3px 10px', borderRadius: 99 }}>
+                        <span style={{ background: `${status.color}18`, color: status.color, fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 99 }}>
                           {status.label}
                         </span>
                         <Link href={getDetailLink(item)} style={{ color: 'var(--green-deep)', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>
@@ -145,10 +167,17 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>
-                <div style={{ fontSize: '3.5rem', marginBottom: 16 }}>📭</div>
-                <div style={{ fontWeight: 600, marginBottom: 8 }}>কোনো বিজ্ঞাপন নেই</div>
-                <Link href="/post-listing" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', marginTop: 8 }}>
-                  + প্রথম বিজ্ঞাপন দিন
+                <div style={{ fontSize: '3.5rem', marginBottom: 16 }}>
+                  {tab === 'project' ? '🏗️' : '📭'}
+                </div>
+                <div style={{ fontWeight: 600, marginBottom: 8 }}>
+                  {tab === 'project' ? 'কোনো Project নেই' : 'কোনো বিজ্ঞাপন নেই'}
+                </div>
+                <Link
+                  href={tab === 'project' ? '/post-project' : '/post-listing'}
+                  className="btn-primary"
+                  style={{ textDecoration: 'none', display: 'inline-flex', marginTop: 8 }}>
+                  {tab === 'project' ? '🏗️ প্রথম Project দিন' : '+ প্রথম বিজ্ঞাপন দিন'}
                 </Link>
               </div>
             )}
