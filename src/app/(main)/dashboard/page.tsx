@@ -2,16 +2,15 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
-import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  PENDING: { label: 'অপেক্ষমাণ', color: '#D97706' },
-  ACTIVE: { label: 'সক্রিয়', color: '#166A47' },
-  SOLD: { label: 'বিক্রিত', color: '#6B7280' },
-  RENTED: { label: 'ভাড়া হয়েছে', color: '#6B7280' },
+  PENDING:  { label: 'অপেক্ষমাণ', color: '#D97706' },
+  ACTIVE:   { label: 'সক্রিয়', color: '#166A47' },
+  SOLD:     { label: 'বিক্রিত', color: '#6B7280' },
+  RENTED:   { label: 'ভাড়া হয়েছে', color: '#6B7280' },
   REJECTED: { label: 'বাতিল', color: '#DC2626' },
-  EXPIRED: { label: 'মেয়াদোত্তীর্ণ', color: '#9CA3AF' },
+  EXPIRED:  { label: 'মেয়াদোত্তীর্ণ', color: '#9CA3AF' },
 }
 
 export default function DashboardPage() {
@@ -19,6 +18,30 @@ export default function DashboardPage() {
   const [tab, setTab] = useState<'property' | 'vehicle' | 'construction' | 'project'>('property')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({ listings: 0, vehicles: 0, projects: 0, pending: 0 })
+  const [showPostMenu, setShowPostMenu] = useState(false)
+
+  // Fetch counts on mount
+  useEffect(() => {
+    Promise.allSettled([
+      axios.get('/api/users/listings?category=property'),
+      axios.get('/api/users/listings?category=vehicle'),
+      axios.get('/api/users/projects'),
+    ]).then(([propRes, vehRes, projRes]) => {
+      const listings = propRes.status === 'fulfilled' ? (propRes.value.data.data.listings?.length || 0) : 0
+      const vehicles = vehRes.status === 'fulfilled' ? (vehRes.value.data.data.vehicles?.length || 0) : 0
+      const projects = projRes.status === 'fulfilled' ? (projRes.value.data.data.projects?.length || 0) : 0
+
+      // Count pending across all
+      const allListings = propRes.status === 'fulfilled' ? propRes.value.data.data.listings || [] : []
+      const allVehicles = vehRes.status === 'fulfilled' ? vehRes.value.data.data.vehicles || [] : []
+      const allProjects = projRes.status === 'fulfilled' ? projRes.value.data.data.projects || [] : []
+      const pending = [...allListings, ...allVehicles].filter((i: any) => i.status === 'PENDING').length
+        + allProjects.filter((i: any) => i.listingStatus === 'PENDING').length
+
+      setStats({ listings, vehicles, projects, pending })
+    })
+  }, [])
 
   useEffect(() => {
     setLoading(true)
@@ -88,11 +111,49 @@ export default function DashboardPage() {
 
           {/* Main content */}
           <div>
+            {/* Stats cards */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}>
+              {[
+                { label: 'প্রপার্টি', value: stats.listings, icon: '🏠', tab: 'property' as const },
+                { label: 'গাড়ি', value: stats.vehicles, icon: '🚗', tab: 'vehicle' as const },
+                { label: 'Projects', value: stats.projects, icon: '🏗️', tab: 'project' as const },
+                { label: 'অনুমোদন বাকি', value: stats.pending, icon: '⏳', alert: true, tab: 'property' as const },
+              ].map(card => (
+                <div key={card.label} onClick={() => setTab(card.tab)}
+                  style={{
+                    background: card.alert && stats.pending > 0 ? '#FFFBEB' : 'white',
+                    borderRadius: 10, padding: '12px 14px',
+                    border: `1px solid ${card.alert && stats.pending > 0 ? '#FDE68A' : 'var(--border)'}`,
+                    cursor: 'pointer', textAlign: 'center',
+                    transition: 'box-shadow 0.15s',
+                  }}>
+                  <div style={{ fontSize: '1.4rem', marginBottom: 3 }}>{card.icon}</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 800, color: card.alert && stats.pending > 0 ? '#D97706' : 'var(--green-deep)' }}>
+                    {card.value}
+                  </div>
+                  <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', marginTop: 1 }}>{card.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Header with split post button */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h1 style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--green-deep)' }}>আমার বিজ্ঞাপন</h1>
-              <Link href="/post-listing" className="btn-primary" style={{ textDecoration: 'none', padding: '8px 16px', fontSize: '0.9rem' }}>
-                + নতুন দিন
-              </Link>
+              <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--green-deep)' }}>আমার বিজ্ঞাপন</h1>
+              <div style={{ position: 'relative' }}>
+                <div style={{ display: 'flex', gap: 0 }}>
+                  <Link href="/post-listing" style={{
+                    padding: '8px 12px', fontSize: '0.85rem', textDecoration: 'none',
+                    background: 'var(--green-deep)', color: 'white', fontWeight: 700,
+                    borderRadius: '8px 0 0 8px',
+                  }}>+ বিজ্ঞাপন</Link>
+                  <Link href="/post-project" style={{
+                    padding: '8px 10px', fontSize: '0.85rem', textDecoration: 'none',
+                    background: 'var(--amber)', color: '#1A1A2E', fontWeight: 800,
+                    borderRadius: '0 8px 8px 0',
+                    borderLeft: '1px solid rgba(255,255,255,0.4)',
+                  }} title="নতুন Project দিন">🏗️</Link>
+                </div>
+              </div>
             </div>
 
             {/* Tabs */}
