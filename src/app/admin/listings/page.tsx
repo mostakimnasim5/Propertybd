@@ -11,7 +11,8 @@ const STATUSES = [
 const CATEGORIES = [
   { id: 'property', label: '🏠 প্রপার্টি' },
   { id: 'vehicle', label: '🚗 গাড়ি' },
-  { id: 'construction', label: '🏗️ নির্মাণ' },
+  { id: 'construction', label: '🔨 নির্মাণ' },
+  { id: 'project', label: '🏗️ Developer Project' },
 ]
 
 export default function AdminListingsPage() {
@@ -96,7 +97,18 @@ export default function AdminListingsPage() {
             <tbody>
               {items.map((item: any) => {
                 const img = item.images?.[0]?.url || null
+                // Project has title, others have title/companyName/brand+model
                 const title = item.title || item.companyName || `${item.brand} ${item.model}`
+                // Project owner is via construction.owner
+                const owner = category === 'project'
+                  ? item.construction?.owner
+                  : item.owner
+                // Project price = minPrice
+                const price = category === 'project' ? item.minPrice : item.price
+                // Project extra info
+                const extra = category === 'project'
+                  ? `${item.totalUnits}টি unit • ${item.construction?.companyName || ''}`
+                  : null
                 return (
                   <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '12px 14px' }}>
@@ -107,11 +119,12 @@ export default function AdminListingsPage() {
                     <td style={{ padding: '12px 14px', maxWidth: 280 }}>
                       <div style={{ fontWeight: 700, fontSize: '0.88rem', marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>📍 {item.district?.name}</div>
-                      {item.price && <div style={{ fontSize: '0.8rem', color: 'var(--green-deep)', fontWeight: 700 }}>৳ {Number(item.price).toLocaleString()}</div>}
+                      {extra && <div style={{ fontSize: '0.72rem', color: 'var(--text-secondary)' }}>{extra}</div>}
+                      {price && <div style={{ fontSize: '0.8rem', color: 'var(--green-deep)', fontWeight: 700 }}>৳ {Number(price).toLocaleString()}</div>}
                     </td>
                     <td style={{ padding: '12px 14px' }}>
-                      <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{item.owner?.name || '—'}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{item.owner?.phone}</div>
+                      <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{owner?.name || '—'}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{owner?.phone}</div>
                     </td>
                     <td style={{ padding: '12px 14px', fontSize: '0.78rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                       {new Date(item.createdAt).toLocaleDateString('bn-BD')}
