@@ -20,6 +20,8 @@ export default function PostProjectPage() {
   const [step, setStep] = useState<Step>(1)
   const [divisions, setDivisions] = useState<any[]>([])
   const [myCompanies, setMyCompanies] = useState<any[]>([])
+  const [subStatus, setSubStatus] = useState<any>(null)
+  const [checkingAccess, setCheckingAccess] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [uploadingImg, setUploadingImg] = useState(false)
   const [images, setImages] = useState<string[]>([])
@@ -45,11 +47,18 @@ export default function PostProjectPage() {
   }, [user, loading, router])
 
   useEffect(() => {
-    axios.get('/api/locations').then(r => setDivisions(r.data.data.divisions)).catch(() => {})
-    axios.get('/api/users/listings?category=construction').then(r => {
-      setMyCompanies(r.data.data.companies || [])
+    if (!user) return
+    Promise.all([
+      axios.get('/api/locations'),
+      axios.get('/api/users/listings?category=construction'),
+      axios.get('/api/subscription/status'),
+    ]).then(([locRes, compRes, subRes]) => {
+      setDivisions(locRes.data.data.divisions || [])
+      setMyCompanies(compRes.data.data.companies || [])
+      setSubStatus(subRes.data.data)
     }).catch(() => {})
-  }, [])
+      .finally(() => setCheckingAccess(false))
+  }, [user])
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field?: string) => {
     const file = e.target.files?.[0]
@@ -115,7 +124,54 @@ export default function PostProjectPage() {
     } finally { setSubmitting(false) }
   }
 
-  if (loading) return <div style={{ padding: '80px 0', textAlign: 'center' }}>⏳</div>
+  if (loading || checkingAccess) return (
+    <div style={{ padding: '80px 0', textAlign: 'center', color: 'var(--text-muted)' }}>⏳ লোড হচ্ছে...</div>
+  )
+
+  // Guard 1: Must have an active subscription (BROKER or ENTERPRISE plan)
+  const hasSubscription = subStatus?.isActive && ['PRO', 'ENTERPRISE'].includes(subStatus?.subscription?.plan)
+
+  if (!hasSubscription) {
+    return (
+      <div style={{ padding: '60px 16px', minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ maxWidth: 480, textAlign: 'center' }}>
+          <div style={{ fontSize: '4rem', marginBottom: 16 }}>🔒</div>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 10, color: 'var(--green-deep)' }}>
+            Developer Project দিতে Subscription দরকার
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: 24 }}>
+            Developer Project দিতে Pro বা Enterprise subscription প্রয়োজন।
+            Subscription নিলে আপনি unlimited project, featured placement এবং verified badge পাবেন।
+          </p>
+
+          <div style={{ background: 'var(--green-light)', borderRadius: 12, padding: '16px 20px', marginBottom: 24, textAlign: 'left' }}>
+            <div style={{ fontWeight: 700, color: 'var(--green-deep)', marginBottom: 10 }}>📦 Developer-এর জন্য সুপারিশকৃত:</div>
+            {[
+              { plan: 'PRO', price: '৳৩,০০০/মাস', features: '৫০ listing, ৫ featured, analytics' },
+              { plan: 'ENTERPRISE', price: '৳৫,০০০/মাস', features: 'Unlimited, ২০ featured, dedicated page' },
+            ].map(p => (
+              <div key={p.plan} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid rgba(22,106,71,0.15)' }}>
+                <div>
+                  <span style={{ fontWeight: 700, color: 'var(--green-deep)' }}>{p.plan}</span>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginLeft: 8 }}>{p.features}</span>
+                </div>
+                <span style={{ fontWeight: 800, color: 'var(--green-deep)' }}>{p.price}</span>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="/subscription" className="btn-primary" style={{ textDecoration: 'none', padding: '12px 24px' }}>
+              👔 Subscription নিন
+            </a>
+            <a href="/dashboard" className="btn-outline" style={{ textDecoration: 'none' }}>
+              Dashboard-এ যান
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const STEPS = ['Project তথ্য', 'অবস্থান', 'মূল্য ও Unit', 'ছবি ও সুবিধা']
 
