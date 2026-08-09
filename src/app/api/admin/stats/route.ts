@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
       totalUsers, totalListings, pendingListings,
       totalVehicles, pendingVehicles,
       totalLeads, totalConstruction,
-      totalProjects,
+      totalProjects, pendingProjects,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.listing.count({ where: { status: 'ACTIVE' } }),
@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
       prisma.vehicle.count({ where: { status: 'PENDING' } }),
       prisma.leadUnlock.count(),
       prisma.construction.count({ where: { status: 'ACTIVE' } }),
+      prisma.developerProject.count({ where: { listingStatus: 'ACTIVE' } }),
+      prisma.developerProject.count({ where: { listingStatus: 'PENDING' } }),
     ])
 
     return successResponse({
@@ -32,6 +34,9 @@ export async function GET(req: NextRequest) {
       totalLeads,
       totalConstruction,
       totalProjects,
+      pendingProjects,
+      // Combined pending for dashboard alert
+      totalPending: pendingListings + pendingVehicles + pendingProjects,
     })
   } catch (error) {
     console.error('Admin stats error:', error)

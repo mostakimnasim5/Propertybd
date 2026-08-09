@@ -16,12 +16,16 @@ export default function AdminDashboard() {
   const cards = stats ? [
     { icon: '👥', label: 'মোট ব্যবহারকারী', value: stats.totalUsers, color: '#3B82F6' },
     { icon: '🏠', label: 'সক্রিয় প্রপার্টি', value: stats.totalListings, color: '#166A47' },
-    { icon: '⏳', label: 'অনুমোদন বাকি', value: stats.pendingListings, color: '#D97706', alert: true },
     { icon: '🚗', label: 'সক্রিয় গাড়ি', value: stats.totalVehicles, color: '#8B5CF6' },
-    { icon: '🔔', label: 'গাড়ি অনুমোদন বাকি', value: stats.pendingVehicles, color: '#EF4444', alert: true },
-    { icon: '🔓', label: 'মোট Lead Unlock', value: stats.totalLeads, color: '#F59E0B' },
-    { icon: '🏗️', label: 'সক্রিয় নির্মাণ', value: stats.totalConstruction, color: '#06B6D4' },
-    { icon: '💰', label: 'মোট আয় (৳)', value: `${(stats.totalLeads * 20).toLocaleString()}`, color: '#10B981' },
+    { icon: '🏗️', label: 'Developer Projects', value: stats.totalProjects, color: '#06B6D4' },
+    { icon: '🔨', label: 'সক্রিয় নির্মাণ', value: stats.totalConstruction, color: '#0891B2' },
+    {
+      icon: '⏳', label: 'সব অনুমোদন বাকি',
+      value: stats.totalPending ?? (stats.pendingListings + stats.pendingVehicles),
+      color: '#D97706', alert: true,
+    },
+    { icon: '🏗️', label: 'Project অনুমোদন বাকি', value: stats.pendingProjects ?? 0, color: '#EF4444', alert: !!stats.pendingProjects },
+    { icon: '🔓', label: 'মোট Lead Unlock', value: stats.totalLeads, color: '#10B981' },
   ] : []
 
   return (
@@ -57,8 +61,9 @@ export default function AdminDashboard() {
         <div style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 20 }}>
           <div style={{ fontWeight: 700, marginBottom: 14, color: 'var(--green-deep)' }}>⚡ দ্রুত অ্যাকশন</div>
           {[
-            { href: '/admin/listings?status=PENDING', label: '🏠 প্রপার্টি অনুমোদন করুন', count: stats?.pendingListings },
-            { href: '/admin/listings?status=PENDING&category=vehicle', label: '🚗 গাড়ি অনুমোদন করুন', count: stats?.pendingVehicles },
+            { href: '/admin/listings?status=PENDING', label: '🏠 প্রপার্টি অনুমোদন', count: stats?.pendingListings },
+            { href: '/admin/listings?status=PENDING&category=vehicle', label: '🚗 গাড়ি অনুমোদন', count: stats?.pendingVehicles },
+            { href: '/admin/listings?status=PENDING&category=project', label: '🏗️ Project অনুমোদন', count: stats?.pendingProjects },
             { href: '/admin/users', label: '👥 ব্যবহারকারী দেখুন', count: stats?.totalUsers },
           ].map((item, i) => (
             <a key={i} href={item.href} style={{
