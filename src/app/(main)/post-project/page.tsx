@@ -173,6 +173,44 @@ export default function PostProjectPage() {
     )
   }
 
+  // Guard 2: Must have at least one Construction company
+  if (!checkingAccess && myCompanies.length === 0) {
+    return (
+      <div style={{ padding: '60px 16px', minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ maxWidth: 480, textAlign: 'center' }}>
+          <div style={{ fontSize: '4rem', marginBottom: 16 }}>🏢</div>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: 10, color: 'var(--green-deep)' }}>
+            আগে Construction Company যোগ করুন
+          </h1>
+          <p style={{ color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: 24 }}>
+            Developer Project দিতে হলে আপনার একটি Construction Company profile থাকতে হবে।
+            Company যোগ করুন — তারপর project দিন।
+          </p>
+          <div style={{ background: 'var(--green-light)', borderRadius: 12, padding: '16px 20px', marginBottom: 24, textAlign: 'left' }}>
+            {[
+              '✓ কোম্পানির নাম ও বিবরণ',
+              '✓ কাজের ধরন ও অভিজ্ঞতা',
+              '✓ Portfolio যোগ করুন',
+              '✓ এরপর যত খুশি Project দিন',
+            ].map(item => (
+              <div key={item} style={{ fontSize: '0.88rem', color: 'var(--green-deep)', fontWeight: 600, marginBottom: 6 }}>
+                {item}
+              </div>
+            ))}
+          </div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a href="/post-listing?category=construction" className="btn-primary" style={{ textDecoration: 'none', padding: '12px 24px' }}>
+              🏢 Company যোগ করুন
+            </a>
+            <a href="/construction" className="btn-outline" style={{ textDecoration: 'none' }}>
+              Construction দেখুন →
+            </a>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   const STEPS = ['Project তথ্য', 'অবস্থান', 'মূল্য ও Unit', 'ছবি ও সুবিধা']
 
   return (
