@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
@@ -17,8 +17,15 @@ const CONDITION_LABELS: Record<string,string> = { NEW:'নতুন', EXCELLENT:
 export default function PostListingPage() {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  const [category, setCategory] = useState<Category>('property')
+  // Pre-select category from URL param: /post-listing?category=construction
+  const urlCategory = searchParams.get('category') as Category | null
+  const [category, setCategory] = useState<Category>(
+    urlCategory && ['property', 'vehicle', 'construction'].includes(urlCategory)
+      ? urlCategory
+      : 'property'
+  )
   const [divisions, setDivisions] = useState<any[]>([])
   const [selectedDiv, setSelectedDiv] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -103,13 +110,46 @@ export default function PostListingPage() {
         <p style={{ color: 'var(--text-secondary)', marginBottom: 4, fontSize: '0.9rem' }}>
           বিজ্ঞাপন অনুমোদনের পর সর্বসাধারণের কাছে প্রকাশিত হবে।
         </p>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 28 }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: category === 'construction' ? 12 : 28 }}>
           Developer বা Builder?{' '}
           <a href="/post-project" style={{ color: 'var(--green-deep)', fontWeight: 700, textDecoration: 'none' }}>
             🏗️ নতুন Project দিন →
           </a>
         </p>
+
+        {/* Construction banner — shows when redirected from post-project */}
+        {category === 'construction' && (
+          <div style={{ background: 'linear-gradient(135deg, var(--green-deep), #1a6b47)', borderRadius: 12, padding: '14px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: '1.5rem' }}>🏢</span>
+            <div>
+              <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem', marginBottom: 2 }}>
+                Construction Company তৈরি করুন
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem' }}>
+                Company তৈরির পর আপনি Developer Project দিতে পারবেন।
+              </div>
+            </div>
+            <a href="/post-project" style={{ marginLeft: 'auto', padding: '6px 14px', background: 'var(--amber)', color: '#1A1A2E', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem', whiteSpace: 'nowrap', flexShrink: 0 }}>
+              Project দিন →
+            </a>
+          </div>
+        )}
         <p style={{ color: 'var(--text-secondary)', marginBottom: 28 }}>বিজ্ঞাপন অনুমোদনের পর সর্বসাধারণের কাছে প্রকাশিত হবে।</p>
+
+        {/* Construction category selected: builder hint */}
+        {category === 'construction' && (
+          <div style={{ background: 'linear-gradient(135deg, var(--green-deep), #1a6b47)', borderRadius: 12, padding: '16px 20px', marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <div style={{ color: 'white', fontWeight: 800, marginBottom: 4 }}>🏢 Construction Company যোগ করুন</div>
+              <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem' }}>
+                Company যোগ হলে আপনি Developer Project দিতে পারবেন।
+              </div>
+            </div>
+            <a href="/post-project" style={{ padding: '8px 16px', background: 'var(--amber)', color: '#1A1A2E', borderRadius: 8, textDecoration: 'none', fontWeight: 700, fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+              🏗️ তারপর Project দিন →
+            </a>
+          </div>
+        )}
 
         {/* Category select */}
         <div style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 20, marginBottom: 20 }}>
@@ -118,13 +158,13 @@ export default function PostListingPage() {
             {[
               { id: 'property', label: '🏠 প্রপার্টি' },
               { id: 'vehicle', label: '🚗 গাড়ি/বাইক' },
-              { id: 'construction', label: '🏗️ নির্মাণ' },
+              { id: 'construction', label: '🏗️ নির্মাণ Company' },
             ].map(c => (
               <button key={c.id} onClick={() => setCategory(c.id as Category)} style={{
                 flex: 1, padding: '10px 8px', border: `2px solid ${category === c.id ? 'var(--green-deep)' : 'var(--border)'}`,
                 borderRadius: 10, background: category === c.id ? 'var(--green-light)' : 'white',
                 color: category === c.id ? 'var(--green-deep)' : 'var(--text-secondary)',
-                fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.9rem',
+                fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.88rem',
               }}>{c.label}</button>
             ))}
           </div>
