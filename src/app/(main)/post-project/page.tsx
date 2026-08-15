@@ -118,7 +118,9 @@ export default function PostProjectPage() {
         availableUnits: form.totalUnits,
       })
       toast.success('✅ Project জমা হয়েছে! অনুমোদনের পর প্রকাশিত হবে।')
-      router.push('/dashboard')
+      // Refresh user to get updated BUILDER role
+      await refreshUser()
+      router.push('/dashboard?tab=project&submitted=true')
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'সমস্যা হয়েছে')
     } finally { setSubmitting(false) }

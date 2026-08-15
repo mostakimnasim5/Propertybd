@@ -48,15 +48,31 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Upgrade user role to BROKER
-    await prisma.user.update({
+    // Upgrade user role based on plan (never downgrade ADMIN)
+    const currentUser = await prisma.user.findUnique({
       where: { id: authUser.userId },
-      data: { role: 'BROKER' },
+      select: { role: true },
     })
+
+    const roleMap: Record<string, string> = {
+      BASIC: 'BROKER',
+      PRO: 'BUILDER',
+      ENTERPRISE: 'BUILDER',
+    }
+    const newRole = roleMap[plan] || 'BROKER'
+    const shouldUpgradeRole = currentUser?.role !== 'ADMIN'
+
+    if (shouldUpgradeRole) {
+      await prisma.user.update({
+        where: { id: authUser.userId },
+        data: { role: newRole as any },
+      })
+    }
 
     return successResponse({
       subscription,
       plan: selectedPlan,
+      newRole,
       message: `✅ ${selectedPlan.name} subscription সফলভাবে চালু হয়েছে!`,
     }, 201)
   } catch (error) {

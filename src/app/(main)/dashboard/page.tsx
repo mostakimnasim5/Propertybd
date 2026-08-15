@@ -82,9 +82,12 @@ export default function DashboardPage() {
               </div>
               <div style={{ color: 'white', fontWeight: 700, fontSize: '1rem' }}>{user?.name || 'ব্যবহারকারী'}</div>
               <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.82rem', marginTop: 2 }}>{user?.phone}</div>
-              <div style={{ marginTop: 8 }}>
-                <span style={{ background: 'var(--amber)', color: 'white', fontSize: '0.72rem', fontWeight: 700, padding: '2px 10px', borderRadius: 99 }}>
-                  {user?.role === 'BROKER' ? 'ব্রোকার' : user?.role === 'BUILDER' ? 'বিল্ডার' : 'সদস্য'}
+              <div style={{ marginTop: 8, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+                <span style={{
+                  background: user?.role === 'BUILDER' ? 'var(--amber)' : user?.role === 'BROKER' ? '#3B82F6' : user?.role === 'ADMIN' ? '#DC2626' : 'rgba(255,255,255,0.2)',
+                  color: 'white', fontSize: '0.72rem', fontWeight: 700, padding: '2px 10px', borderRadius: 99,
+                }}>
+                  {user?.role === 'BUILDER' ? '🏗️ Developer' : user?.role === 'BROKER' ? '👔 ব্রোকার' : user?.role === 'ADMIN' ? '⚙️ Admin' : '👤 সদস্য'}
                 </span>
               </div>
             </div>

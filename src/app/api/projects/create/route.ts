@@ -8,6 +8,19 @@ export async function POST(req: NextRequest) {
     const authUser = await getAuthUser()
     if (!authUser) return unauthorizedResponse()
 
+    // Server-side subscription check
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: authUser.userId },
+    })
+
+    const hasAccess = subscription?.isActive &&
+      subscription.endDate > new Date() &&
+      ['PRO', 'ENTERPRISE'].includes(subscription.plan)
+
+    if (!hasAccess) {
+      return errorResponse('Developer Project দিতে PRO বা ENTERPRISE subscription প্রয়োজন', 403)
+    }
+
     const body = await req.json()
     const {
       title, description, projectType, status,
@@ -28,6 +41,20 @@ export async function POST(req: NextRequest) {
       where: { id: constructionId, ownerId: authUser.userId },
     })
     if (!company) return errorResponse('কোম্পানি পাওয়া যায়নি')
+
+    // Auto-upgrade user role to BUILDER if not already elevated
+    const user = await prisma.user.findUnique({
+      where: { id: authUser.userId },
+      select: { role: true },
+    })
+
+    const shouldUpgrade = user && ['BUYER', 'OWNER', 'BROKER'].includes(user.role)
+    if (shouldUpgrade) {
+      await prisma.user.update({
+        where: { id: authUser.userId },
+        data: { role: 'BUILDER' },
+      })
+    }
 
     const project = await prisma.developerProject.create({
       data: {
