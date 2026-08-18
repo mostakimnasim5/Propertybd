@@ -85,14 +85,37 @@ export default function Navbar() {
                           position: 'absolute', right: 0, top: 44,
                           background: 'white', borderRadius: 10,
                           border: '1px solid var(--border)', boxShadow: 'var(--shadow-md)',
-                          minWidth: 190, zIndex: 200, overflow: 'hidden',
+                          minWidth: 200, zIndex: 200, overflow: 'hidden',
                         }}>
+                          {/* User info header */}
+                          <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: 4 }}>
+                              {user.name || user.phone}
+                            </div>
+                            <span style={{
+                              fontSize: '0.68rem', fontWeight: 700,
+                              padding: '2px 8px', borderRadius: 99,
+                              background: user.role === 'BUILDER' ? 'var(--amber-light)' :
+                                         user.role === 'BROKER' ? '#DBEAFE' :
+                                         user.role === 'ADMIN' ? '#FEE2E2' : 'var(--green-light)',
+                              color: user.role === 'BUILDER' ? '#92400E' :
+                                     user.role === 'BROKER' ? '#1D4ED8' :
+                                     user.role === 'ADMIN' ? '#DC2626' : 'var(--green-deep)',
+                            }}>
+                              {user.role === 'BUILDER' ? '🏗️ Developer' :
+                               user.role === 'BROKER' ? '👔 Broker' :
+                               user.role === 'ADMIN' ? '⚙️ Admin' : '👤 সদস্য'}
+                            </span>
+                          </div>
                           {[
                             { href: '/dashboard', label: '📊 ড্যাশবোর্ড' },
                             { href: '/subscription', label: '👔 Subscription' },
                             { href: '/saved', label: '❤️ সংরক্ষিত' },
                             { href: '/post-listing', label: '+ বিজ্ঞাপন দিন' },
                             { href: '/post-project', label: '🏗️ Project দিন' },
+                            ...(user.role === 'BUILDER' || user.role === 'BROKER' ? [
+                              { href: '/dashboard?tab=project', label: '📁 আমার Projects' },
+                            ] : []),
                             ...(user.role === 'ADMIN' ? [{ href: '/admin/dashboard', label: '⚙️ অ্যাডমিন' }] : []),
                           ].map(item => (
                             <Link key={item.href} href={item.href} style={{ display: 'block', padding: '11px 16px', textDecoration: 'none', color: 'var(--text-primary)', fontWeight: 600, fontSize: '0.9rem', borderBottom: '1px solid var(--border)' }}>

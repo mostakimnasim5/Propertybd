@@ -78,9 +78,18 @@ export default function SubscriptionPage() {
               <div style={{ fontWeight: 800, color: 'var(--green-deep)', fontSize: '1rem', marginBottom: 4 }}>
                 ✅ আপনার বর্তমান plan: {currentSub.subscription?.planDetails?.name}
               </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 6 }}>
                 {currentSub.subscription?.daysLeft} দিন বাকি •{' '}
                 {currentSub.subscription?.listingCount}/{currentSub.subscription?.listingLimit} listing ব্যবহৃত
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <span style={{
+                  background: user?.role === 'BUILDER' ? 'var(--amber)' : '#3B82F6',
+                  color: user?.role === 'BUILDER' ? '#1A1A2E' : 'white',
+                  fontSize: '0.72rem', fontWeight: 700, padding: '2px 10px', borderRadius: 99,
+                }}>
+                  {user?.role === 'BUILDER' ? '🏗️ Developer/Builder' : '👔 Broker'}
+                </span>
               </div>
             </div>
             <Link href="/dashboard" className="btn-primary" style={{ textDecoration: 'none', padding: '8px 18px', fontSize: '0.88rem' }}>

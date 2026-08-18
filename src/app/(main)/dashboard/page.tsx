@@ -85,11 +85,38 @@ export default function DashboardPage() {
               <div style={{ marginTop: 8, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
                 <span style={{
                   background: user?.role === 'BUILDER' ? 'var(--amber)' : user?.role === 'BROKER' ? '#3B82F6' : user?.role === 'ADMIN' ? '#DC2626' : 'rgba(255,255,255,0.2)',
-                  color: 'white', fontSize: '0.72rem', fontWeight: 700, padding: '2px 10px', borderRadius: 99,
+                  color: user?.role === 'BUILDER' ? '#1A1A2E' : 'white',
+                  fontSize: '0.72rem', fontWeight: 800, padding: '3px 12px', borderRadius: 99,
                 }}>
-                  {user?.role === 'BUILDER' ? '🏗️ Developer' : user?.role === 'BROKER' ? '👔 ব্রোকার' : user?.role === 'ADMIN' ? '⚙️ Admin' : '👤 সদস্য'}
+                  {user?.role === 'BUILDER' ? '🏗️ Developer/Builder' : user?.role === 'BROKER' ? '👔 ব্রোকার' : user?.role === 'ADMIN' ? '⚙️ Admin' : '👤 সদস্য'}
                 </span>
               </div>
+
+              {/* Subscription info */}
+              {stats.subscription?.isActive && (
+                <div style={{ marginTop: 10, background: 'rgba(255,255,255,0.1)', borderRadius: 8, padding: '8px 12px' }}>
+                  <div style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.72rem', fontWeight: 700, marginBottom: 2 }}>
+                    {stats.subscription.plan} Plan
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.68rem' }}>
+                    {stats.subscription.daysLeft}দিন বাকি • {stats.subscription.listingCount}/{stats.subscription.listingLimit} listing
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.2)', borderRadius: 99, height: 3, marginTop: 5, overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 99,
+                      background: 'var(--amber)',
+                      width: `${Math.min(100, (stats.subscription.listingCount / stats.subscription.listingLimit) * 100)}%`,
+                    }} />
+                  </div>
+                </div>
+              )}
+              {!stats.subscription?.isActive && (
+                <div style={{ marginTop: 10 }}>
+                  <a href="/subscription" style={{ display: 'block', textAlign: 'center', background: 'var(--amber)', color: '#1A1A2E', borderRadius: 8, padding: '6px 12px', textDecoration: 'none', fontSize: '0.72rem', fontWeight: 700 }}>
+                    👔 Subscription নিন
+                  </a>
+                </div>
+              )}
             </div>
 
             {/* Nav */}
