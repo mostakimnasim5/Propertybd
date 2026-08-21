@@ -5,7 +5,6 @@ import axios from 'axios'
 import VehicleCard from '@/components/vehicle/VehicleCard'
 import Pagination from '@/components/common/Pagination'
 
-const TYPES = [{ id: '', label: 'সব' }, { id: 'CAR', label: 'গাড়ি' }, { id: 'BIKE', label: 'বাইক' }]
 const PURPOSES = [{ id: '', label: 'সব' }, { id: 'SALE', label: 'বিক্রি' }, { id: 'RENT', label: 'ভাড়া' }]
 const CONDITIONS = [
   { id: '', label: 'যেকোনো' }, { id: 'NEW', label: 'নতুন' },
@@ -84,22 +83,6 @@ function VehiclesPageContent() {
           style={{ background: 'none', border: 'none', color: 'var(--red)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem' }}>রিসেট</button>
       </div>
 
-      {/* Type pills */}
-      <div style={{ marginBottom: 12 }}>
-        <label>ধরন</label>
-        <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-          {TYPES.map(t => (
-            <button key={t.id} onClick={() => set('type', t.id)} style={{
-              padding: '4px 12px', borderRadius: 99, fontFamily: 'inherit',
-              border: `1.5px solid ${filters.type === t.id ? 'var(--green-deep)' : 'var(--border)'}`,
-              background: filters.type === t.id ? 'var(--green-deep)' : 'white',
-              color: filters.type === t.id ? 'white' : 'var(--text-secondary)',
-              fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-            }}>{t.label}</button>
-          ))}
-        </div>
-      </div>
-
       {/* Purpose pills */}
       <div style={{ marginBottom: 12 }}>
         <label>উদ্দেশ্য</label>
@@ -154,7 +137,7 @@ function VehiclesPageContent() {
       <div className="container">
         <div className="flex-between" style={{ marginBottom: 20 }}>
           <h1 style={{ fontSize: 'clamp(1.1rem, 4vw, 1.5rem)', fontWeight: 800, color: 'var(--green-deep)' }}>
-            🚗 গাড়ি ও বাইক — {total}টি
+            🚗 গাড়ি — {total}টি
           </h1>
           <button onClick={() => setFilterOpen(!filterOpen)} className="show-mobile" style={{
             padding: '7px 14px', borderRadius: 8,

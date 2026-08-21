@@ -55,7 +55,7 @@ export interface Listing {
   createdAt: string
 }
 
-export type VehicleType = 'CAR' | 'BIKE'
+export type VehicleType = 'CAR'
 export type VehiclePurpose = 'SALE' | 'RENT'
 export type VehicleCondition = 'NEW' | 'EXCELLENT' | 'GOOD' | 'FAIR'
 

@@ -2,6 +2,7 @@
 import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
+import toast from 'react-hot-toast'
 import { useAuth } from '@/contexts/AuthContext'
 import { useSearchParams } from 'next/navigation'
 
@@ -67,6 +68,17 @@ function DashboardPageContent() {
     if (tab === 'construction') return `/construction/${item.id}`
     if (tab === 'project') return `/projects/${item.id}`
     return `/properties/${item.id}`
+  }
+
+  const handleDelete = async (item: any) => {
+    if (!confirm('আপনি কি নিশ্চিত? এই বিজ্ঞাপনটি পুরোপুরি মুছে যাবে।')) return
+    try {
+      await axios.delete(`/api/users/listings/${item.id}?category=${tab}`)
+      setItems(prev => prev.filter((i: any) => i.id !== item.id))
+      toast.success('বিজ্ঞাপন মুছে গেছে')
+    } catch {
+      toast.error('মুছতে পারা গেল না — আবার চেষ্টা করুন')
+    }
   }
 
   return (
@@ -191,27 +203,6 @@ function DashboardPageContent() {
             {/* Project submitted success banner */}
             {submitted && tab === 'project' && (
               <div style={{
-                background: 'var(--green-light)', borderRadius: 12,
-                border: '1px solid rgba(22,106,71,0.3)',
-                padding: '14px 18px', marginBottom: 16,
-                display: 'flex', alignItems: 'center', gap: 12,
-              }}>
-                <span style={{ fontSize: '1.5rem' }}>✅</span>
-                <div>
-                  <div style={{ fontWeight: 700, color: 'var(--green-deep)', marginBottom: 2 }}>
-                    Project সফলভাবে জমা হয়েছে!
-                  </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                    Admin অনুমোদনের পর আপনার Project সর্বসাধারণের কাছে প্রকাশিত হবে।
-                    {user?.role === 'BUILDER' && ' আপনার role এখন 🏗️ Developer/Builder।'}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Project submitted success banner */}
-            {submitted && tab === 'project' && (
-              <div style={{
                 background: 'linear-gradient(135deg, #166A47, #0E4D34)',
                 borderRadius: 12, padding: '16px 20px', marginBottom: 16,
                 display: 'flex', alignItems: 'center', gap: 14,
@@ -225,17 +216,6 @@ function DashboardPageContent() {
                     আমাদের team অনুমোদন করলে সর্বসাধারণের কাছে প্রকাশিত হবে।
                     {user?.role === 'BUILDER' && ' আপনি এখন Developer/Builder হিসেবে verified।'}
                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Project tab: builder info banner */}
-            {tab === 'project' && submitted && (
-              <div style={{ background: 'var(--green-deep)', borderRadius: 12, padding: '14px 20px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span style={{ fontSize: '1.5rem' }}>🎉</span>
-                <div>
-                  <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem' }}>Project সফলভাবে জমা হয়েছে!</div>
-                  <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem' }}>Admin অনুমোদন করলে সর্বসাধারণের কাছে প্রকাশিত হবে।</div>
                 </div>
               </div>
             )}
@@ -333,9 +313,20 @@ function DashboardPageContent() {
                         <span style={{ background: `${status.color}18`, color: status.color, fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px', borderRadius: 99 }}>
                           {status.label}
                         </span>
-                        <Link href={getDetailLink(item)} style={{ color: 'var(--green-deep)', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>
-                          দেখুন →
-                        </Link>
+                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            style={{
+                              background: 'none', border: 'none', color: 'var(--red)',
+                              fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+                              fontFamily: 'inherit', padding: 0,
+                            }}>
+                            🗑️ মুছুন
+                          </button>
+                          <Link href={getDetailLink(item)} style={{ color: 'var(--green-deep)', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}>
+                            দেখুন →
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   )

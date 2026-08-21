@@ -213,7 +213,6 @@ model VehicleImage {
 
 enum VehicleType {
   CAR
-  BIKE
 }
 
 enum VehiclePurpose {

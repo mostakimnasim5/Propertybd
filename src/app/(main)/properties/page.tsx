@@ -8,7 +8,8 @@ import Pagination from '@/components/common/Pagination'
 const TYPES = [
   { id: '', label: 'সব ধরন' }, { id: 'FLAT', label: 'ফ্ল্যাট' },
   { id: 'HOUSE', label: 'বাড়ি' }, { id: 'LAND', label: 'জমি' },
-  { id: 'SHOP', label: 'দোকান/অফিস' }, { id: 'WAREHOUSE', label: 'গোডাউন' },
+  { id: 'SHOP', label: 'দোকান' }, { id: 'OFFICE', label: 'অফিস' },
+  { id: 'WAREHOUSE', label: 'গোডাউন' }, { id: 'BUILDING', label: 'ভবন' },
 ]
 const PURPOSES = [{ id: '', label: 'সব' }, { id: 'SALE', label: 'বিক্রি' }, { id: 'RENT', label: 'ভাড়া' }]
 const BEDROOMS = [{ id: '', label: 'যেকোনো' }, { id: '1', label: '১' }, { id: '2', label: '২' }, { id: '3', label: '৩' }, { id: '4', label: '৪+' }]

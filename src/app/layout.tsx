@@ -6,7 +6,7 @@ import { LanguageProvider } from '@/contexts/LanguageContext'
 
 export const metadata: Metadata = {
   title: 'PropertyBD — বাংলাদেশের সেরা প্রপার্টি মার্কেটপ্লেস',
-  description: 'বাংলাদেশে ফ্ল্যাট, বাড়ি, জমি, দোকান কেনা-বেচা ও ভাড়া, গাড়ি ও বাইক বিক্রি এবং নির্মাণ সেবার জন্য সেরা প্ল্যাটফর্ম।',
+  description: 'বাংলাদেশে ফ্ল্যাট, বাড়ি, জমি, দোকান কেনা-বেচা ও ভাড়া, গাড়ি বিক্রি এবং নির্মাণ সেবার জন্য সেরা প্ল্যাটফর্ম।',
   keywords: 'property bangladesh, flat rent dhaka, bari bikroy, jomir dam, car bikroy bd',
   openGraph: {
     title: 'PropertyBD',
@@ -19,6 +19,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="bn">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Hind Siliguri is the primary typeface for Bengali; Inter as Latin fallback */}
+        <link
+          href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>
         <LanguageProvider>
         <AuthProvider>

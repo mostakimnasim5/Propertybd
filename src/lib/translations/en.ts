@@ -68,7 +68,6 @@ const en: TranslationKey = {
     WAREHOUSE: 'Warehouse',
     BUILDING: 'Building',
     CAR: 'Car',
-    BIKE: 'Bike',
   },
 
   purpose: {
@@ -303,7 +302,6 @@ const en: TranslationKey = {
     vehicle: 'Vehicle',
     saleCar: 'Car for Sale',
     rentCar: 'Car for Rent',
-    saleBike: 'Bike for Sale',
     about: 'About',
     aboutUs: 'About Us',
     contact: 'Contact',

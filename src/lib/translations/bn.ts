@@ -32,8 +32,8 @@ const bn = {
     ctaTitle: 'সম্পদ বিক্রি বা ভাড়া দিতে চান?',
     ctaSub: 'বিনামূল্যে বিজ্ঞাপন দিন, লক্ষ মানুষের কাছে পৌঁছান।',
     ctaBtn: '+ বিজ্ঞাপন দিন',
-    vehicleTitle: 'গাড়ি ও বাইক',
-    vehicleSub: 'সেকেন্ড হ্যান্ড গাড়ি ও বাইক',
+    vehicleTitle: 'গাড়ি',
+    vehicleSub: 'সেকেন্ড হ্যান্ড গাড়ির বাছাই',
     howTitle: 'কীভাবে কাজ করে?',
     howSub: 'মাত্র ৩টি ধাপে কাজ সম্পন্ন করুন',
     step1Title: 'অনুসন্ধান করুন',
@@ -55,7 +55,7 @@ const bn = {
     property: 'প্রপার্টি',
     propertySub: 'ফ্ল্যাট • বাড়ি • জমি',
     vehicle: 'গাড়ি',
-    vehicleSub: 'কার • বাইক',
+    vehicleSub: 'কার',
     construction: 'নির্মাণ',
     constructionSub: 'বিল্ডার • ঠিকাদার',
   },
@@ -70,7 +70,6 @@ const bn = {
     WAREHOUSE: 'গোডাউন',
     BUILDING: 'ভবন',
     CAR: 'গাড়ি',
-    BIKE: 'বাইক',
   },
 
   // Purpose
@@ -197,7 +196,7 @@ const bn = {
     subtitle: 'বিজ্ঞাপন অনুমোদনের পর সর্বসাধারণের কাছে প্রকাশিত হবে।',
     adType: 'বিজ্ঞাপনের ধরন',
     propertyLabel: '🏠 প্রপার্টি',
-    vehicleLabel: '🚗 গাড়ি/বাইক',
+    vehicleLabel: '🚗 গাড়ি',
     constructionLabel: '🏗️ নির্মাণ',
     basicInfo: '📝 মূল তথ্য',
     purposeLabel: 'উদ্দেশ্য *',
@@ -234,7 +233,7 @@ const bn = {
 
   // Vehicle
   vehicle: {
-    title: 'গাড়ি ও বাইক',
+    title: 'গাড়ি',
     brandLabel: 'ব্র্যান্ড *',
     modelLabel: 'মডেল *',
     yearLabel: 'বছর *',
@@ -316,7 +315,6 @@ const bn = {
     vehicle: 'গাড়ি',
     saleCar: 'গাড়ি বিক্রি',
     rentCar: 'গাড়ি ভাড়া',
-    saleBike: 'বাইক বিক্রি',
     about: 'আমাদের সম্পর্কে',
     aboutUs: 'আমাদের পরিচয়',
     contact: 'যোগাযোগ',

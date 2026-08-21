@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20') || 20, 1), 50)
     const skip = (page - 1) * limit
 
-    const type = searchParams.get('type')         // CAR | BIKE
+    const type = searchParams.get('type')         // CAR
     const purpose = searchParams.get('purpose')   // SALE | RENT
     const districtId = searchParams.get('districtId')
     const brand = searchParams.get('brand')

@@ -9,8 +9,6 @@ type Category = 'property' | 'vehicle' | 'construction'
 
 const PROPERTY_TYPES = ['FLAT','HOUSE','LAND','SHOP','OFFICE','WAREHOUSE','BUILDING']
 const PROPERTY_TYPE_LABELS: Record<string,string> = { FLAT:'ফ্ল্যাট', HOUSE:'বাড়ি', LAND:'জমি', SHOP:'দোকান', OFFICE:'অফিস', WAREHOUSE:'গোডাউন', BUILDING:'ভবন' }
-const VEHICLE_TYPES = ['CAR','BIKE']
-const VEHICLE_TYPE_LABELS: Record<string,string> = { CAR:'গাড়ি', BIKE:'বাইক' }
 const CONDITIONS = ['NEW','EXCELLENT','GOOD','FAIR']
 const CONDITION_LABELS: Record<string,string> = { NEW:'নতুন', EXCELLENT:'চমৎকার', GOOD:'ভালো', FAIR:'মোটামুটি' }
 
@@ -157,10 +155,14 @@ function PostListingPageContent() {
           <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
             {[
               { id: 'property', label: '🏠 প্রপার্টি' },
-              { id: 'vehicle', label: '🚗 গাড়ি/বাইক' },
+              { id: 'vehicle', label: '🚗 গাড়ি' },
               { id: 'construction', label: '🏗️ নির্মাণ Company' },
             ].map(c => (
-              <button key={c.id} onClick={() => setCategory(c.id as Category)} style={{
+              <button key={c.id} onClick={() => {
+                setCategory(c.id as Category)
+                // Vehicle category has only CAR; going back to property defaults to FLAT
+                set('type', c.id === 'vehicle' ? 'CAR' : form.type === 'CAR' ? 'FLAT' : form.type)
+              }} style={{
                 flex: 1, padding: '10px 8px', border: `2px solid ${category === c.id ? 'var(--green-deep)' : 'var(--border)'}`,
                 borderRadius: 10, background: category === c.id ? 'var(--green-light)' : 'white',
                 color: category === c.id ? 'var(--green-deep)' : 'var(--text-secondary)',
@@ -198,11 +200,12 @@ function PostListingPageContent() {
 
             {category === 'vehicle' && (
               <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {/* Vehicle type simplified — CAR only, fixed for clarity */}
                 <div>
-                  <label>গাড়ির ধরন *</label>
-                  <select value={form.type} onChange={e => set('type', e.target.value)}>
-                    {VEHICLE_TYPES.map(t => <option key={t} value={t}>{VEHICLE_TYPE_LABELS[t]}</option>)}
-                  </select>
+                  <label>ধরন</label>
+                  <div style={{ padding: '9px 12px', borderRadius: 8, background: 'var(--surface-2)', color: 'var(--text-secondary)', fontWeight: 600, fontSize: '0.9rem' }}>
+                    🚗 গাড়ি
+                  </div>
                 </div>
                 <div>
                   <label>উদ্দেশ্য *</label>

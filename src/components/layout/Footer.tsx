@@ -35,7 +35,7 @@ export default function Footer() {
               title: 'গাড়ি', links: [
                 { href: '/vehicles?type=CAR&purpose=SALE', label: 'গাড়ি বিক্রি' },
                 { href: '/vehicles?type=CAR&purpose=RENT', label: 'গাড়ি ভাড়া' },
-                { href: '/vehicles?type=BIKE', label: 'বাইক বিক্রি' },
+                { href: '/vehicles', label: 'সব গাড়ি' },
               ]
             },
             {

@@ -218,8 +218,8 @@ export default function HomePage() {
           <div className="container">
             <div className="flex-between" style={{ marginBottom: 20 }}>
               <div>
-                <div className="section-title">গাড়ি ও বাইক</div>
-                <div className="section-sub" style={{ marginBottom: 0 }}>সেকেন্ড হ্যান্ড গাড়ি ও বাইক</div>
+                <div className="section-title">গাড়ি</div>
+                <div className="section-sub" style={{ marginBottom: 0 }}>সেকেন্ড হ্যান্ড গাড়ি বাছাইট তালিকা</div>
               </div>
               <a href="/vehicles" style={{ color: 'var(--green-deep)', fontWeight: 700, textDecoration: 'none', fontSize: '0.9rem' }}>সব দেখুন →</a>
             </div>

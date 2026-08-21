@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!vehicle) return { title: 'গাড়ি পাওয়া যায়নি | PropertyBD' }
 
     const purposeMap: Record<string, string> = { SALE: 'বিক্রয়', RENT: 'ভাড়া' }
-    const typeMap: Record<string, string> = { CAR: 'গাড়ি', BIKE: 'বাইক' }
+    const typeMap: Record<string, string> = { CAR: 'গাড়ি' }
 
     const title = `${vehicle.brand} ${vehicle.model} ${vehicle.year} | ${typeMap[vehicle.type]} ${purposeMap[vehicle.purpose]} | PropertyBD`
     const description = `${vehicle.district?.nameBn}-তে ${vehicle.brand} ${vehicle.model} ${vehicle.year} ${purposeMap[vehicle.purpose]} — ৳${Number(vehicle.price).toLocaleString('bn-BD')}। ${vehicle.description?.slice(0, 100)}...`
