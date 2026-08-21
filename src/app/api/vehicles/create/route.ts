@@ -2,11 +2,21 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth'
 import { successResponse, errorResponse, unauthorizedResponse } from '@/lib/api'
+import { canPostListing } from '@/lib/permissions'
 
 export async function POST(req: NextRequest) {
   try {
     const authUser = await getAuthUser()
     if (!authUser) return unauthorizedResponse()
+
+    // Freemium quota check
+    const { allowed, quota } = await canPostListing(authUser.userId)
+    if (!allowed) {
+      return errorResponse(
+        `আপনার ${quota.maxListings}টা লিস্টিং শেষ। আরও দিতে subscription নিন।`,
+        403
+      )
+    }
 
     const body = await req.json()
     const {
@@ -49,6 +59,14 @@ export async function POST(req: NextRequest) {
       },
       include: { images: true },
     })
+
+    // First vehicle post → user becomes OWNER
+    if (authUser.role === 'BUYER') {
+      await prisma.user.update({
+        where: { id: authUser.userId },
+        data: { role: 'OWNER' },
+      })
+    }
 
     return successResponse({ vehicle }, 201)
   } catch (error) {

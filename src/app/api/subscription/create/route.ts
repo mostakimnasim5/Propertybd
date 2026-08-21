@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     const roleMap: Record<string, string> = {
       BASIC: 'BROKER',
-      PRO: 'BUILDER',
+      PRO: 'BROKER',
       ENTERPRISE: 'BUILDER',
     }
     const newRole = roleMap[plan] || 'BROKER'

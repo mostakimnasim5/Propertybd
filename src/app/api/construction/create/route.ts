@@ -35,6 +35,14 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    // Creating a construction company → user becomes BUILDER
+    if (['BUYER', 'OWNER', 'BROKER'].includes(authUser.role)) {
+      await prisma.user.update({
+        where: { id: authUser.userId },
+        data: { role: 'BUILDER' },
+      })
+    }
+
     return successResponse({ company }, 201)
   } catch (error) {
     console.error('Construction create error:', error)

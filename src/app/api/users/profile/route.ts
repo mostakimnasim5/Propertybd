@@ -46,7 +46,11 @@ export async function PATCH(req: NextRequest) {
     if (!authUser) return unauthorizedResponse()
 
     const body = await req.json()
-    const { name, email, profileImage } = body
+    const { name, email, profileImage, role } = body
+
+    // Users can self-declare as OWNER or BROKER — but never grant
+    // themselves ADMIN or BUILDER
+    const SELF_ROLES = ['BUYER', 'OWNER', 'BROKER']
 
     // Validate email if provided
     if (email) {
@@ -67,6 +71,7 @@ export async function PATCH(req: NextRequest) {
         ...(name && { name: name.trim() }),
         ...(email && { email: email.trim().toLowerCase() }),
         ...(profileImage && { profileImage }),
+        ...(role && SELF_ROLES.includes(role) && { role }),
       },
       select: {
         id: true, phone: true, email: true,

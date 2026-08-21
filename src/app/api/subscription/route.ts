@@ -4,6 +4,9 @@ import { getAuthUser } from '@/lib/auth'
 import { successResponse, errorResponse, unauthorizedResponse } from '@/lib/api'
 import { SUBSCRIPTION_PLANS, PlanId } from '@/lib/subscriptionPlans'
 
+// Plans map to roles — PRO buyers stay BROKER (big agencies are brokers,
+// not builders); ENTERPRISE = BUILDER. ADMIN is never downgraded.
+
 // GET — current subscription status
 export async function GET() {
   try {
@@ -95,11 +98,22 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Upgrade user role to BROKER
-    await prisma.user.update({
+    // Upgrade user role via plan map (never downgrade ADMIN)
+    const roleMap: Record<string, string> = {
+      BASIC: 'BROKER',
+      PRO: 'BROKER',
+      ENTERPRISE: 'BUILDER',
+    }
+    const me = await prisma.user.findUnique({
       where: { id: authUser.userId },
-      data: { role: 'BROKER' },
+      select: { role: true },
     })
+    if (me?.role !== 'ADMIN') {
+      await prisma.user.update({
+        where: { id: authUser.userId },
+        data: { role: (roleMap[plan] || 'BROKER') as any },
+      })
+    }
 
     return successResponse({ subscription, plan: planDetails })
   } catch (error) {
