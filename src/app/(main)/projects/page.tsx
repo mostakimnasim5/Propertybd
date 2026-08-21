@@ -137,8 +137,8 @@ export default function ProjectsPage() {
               <div className="grid-auto" style={{ marginBottom: 28 }}>
                 {projects.map(p => <ProjectCard key={p.id} project={p} />)}
               </div>
-              <Pagination current={filters.page} total={totalPages}
-                onChange={p => setFilters(prev => ({ ...prev, page: p }))} />
+              <Pagination page={filters.page} totalPages={totalPages}
+                onPageChange={(p: number) => setFilters(prev => ({ ...prev, page: p }))} />
             </>
           ) : (
             <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>

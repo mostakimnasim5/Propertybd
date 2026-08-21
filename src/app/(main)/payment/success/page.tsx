@@ -1,11 +1,11 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [unlocking, setUnlocking] = useState(true)
@@ -79,5 +79,13 @@ export default function PaymentSuccessPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '80px 0', textAlign: 'center' }}>লোড হচ্ছে...</div>}>
+      <PaymentSuccessPageContent />
+    </Suspense>
   )
 }

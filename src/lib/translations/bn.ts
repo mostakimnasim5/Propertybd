@@ -333,7 +333,7 @@ const bn = {
     switchToEn: 'Switch to English',
     switchToBn: 'বাংলায় দেখুন',
   },
-} as const
+}
 
 export type TranslationKey = typeof bn
 export default bn

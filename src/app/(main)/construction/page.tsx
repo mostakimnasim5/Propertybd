@@ -44,7 +44,7 @@ export default function ConstructionPage() {
         </h1>
 
         {/* Filters */}
-        <div style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 16, marginBottom: 24, display: 'grid', className="filter-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }} }}>
+        <div className="filter-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }}>
           <select value={filters.divisionId} onChange={e => { updateFilter('divisionId', e.target.value); updateFilter('districtId', '') }}>
             <option value="">সব বিভাগ</option>
             {divisions.map((d: any) => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
@@ -96,8 +96,8 @@ export default function ConstructionPage() {
                 </Link>
               ))}
             </div>
-            <Pagination current={filters.page} total={totalPages}
-              onChange={p => setFilters(prev => ({ ...prev, page: p }))} />
+            <Pagination page={filters.page} totalPages={totalPages}
+              onPageChange={(p: number) => setFilters(prev => ({ ...prev, page: p }))} />
           </>
         ) : (
           <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--text-muted)' }}>

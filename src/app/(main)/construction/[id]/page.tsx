@@ -26,8 +26,6 @@ export default function ConstructionDetailPage() {
 
   useEffect(() => { fetchData() }, [id])
 
-  }
-
   const handleReview = async () => {
     if (!user) { window.location.href = '/login'; return }
     setSubmittingReview(true)

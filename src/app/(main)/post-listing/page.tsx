@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -14,7 +14,7 @@ const VEHICLE_TYPE_LABELS: Record<string,string> = { CAR:'গাড়ি', BIKE
 const CONDITIONS = ['NEW','EXCELLENT','GOOD','FAIR']
 const CONDITION_LABELS: Record<string,string> = { NEW:'নতুন', EXCELLENT:'চমৎকার', GOOD:'ভালো', FAIR:'মোটামুটি' }
 
-export default function PostListingPage() {
+function PostListingPageContent() {
   const { user, loading } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -179,7 +179,7 @@ export default function PostListingPage() {
           <div style={{ display: 'grid', gap: 16 }}>
             {/* Category-specific type */}
             {category === 'property' && (
-              <div style={{ display: 'grid', className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} }}>
+              <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label>প্রপার্টির ধরন *</label>
                   <select value={form.type} onChange={e => set('type', e.target.value)}>
@@ -197,7 +197,7 @@ export default function PostListingPage() {
             )}
 
             {category === 'vehicle' && (
-              <div style={{ display: 'grid', className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} }}>
+              <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label>গাড়ির ধরন *</label>
                   <select value={form.type} onChange={e => set('type', e.target.value)}>
@@ -232,7 +232,7 @@ export default function PostListingPage() {
 
             {/* Vehicle-specific fields */}
             {category === 'vehicle' && (
-              <div style={{ display: 'grid', className="form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }} }}>
+              <div className="form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 <div><label>ব্র্যান্ড *</label><input placeholder="Toyota" value={form.brand} onChange={e => set('brand', e.target.value)} /></div>
                 <div><label>মডেল *</label><input placeholder="Corolla" value={form.model} onChange={e => set('model', e.target.value)} /></div>
                 <div><label>বছর *</label><input type="number" value={form.year} onChange={e => set('year', e.target.value)} /></div>
@@ -249,7 +249,7 @@ export default function PostListingPage() {
 
             {/* Property-specific fields */}
             {category === 'property' && form.type !== 'LAND' && (
-              <div style={{ display: 'grid', className="form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }} }}>
+              <div className="form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 <div><label>আয়তন (বর্গফুট)</label><input type="number" placeholder="1200" value={form.area} onChange={e => set('area', e.target.value)} /></div>
                 {['FLAT','HOUSE'].includes(form.type) && <>
                   <div><label>বেডরুম</label><input type="number" placeholder="3" value={form.bedrooms} onChange={e => set('bedrooms', e.target.value)} /></div>
@@ -262,7 +262,7 @@ export default function PostListingPage() {
 
             {/* Construction services */}
             {category === 'construction' && (
-              <div style={{ display: 'grid', className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} }}>
+              <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div>
                   <label>অভিজ্ঞতা (বছর) *</label>
                   <input type="number" placeholder="10" value={form.experience} onChange={e => set('experience', e.target.value)} />
@@ -296,7 +296,7 @@ export default function PostListingPage() {
         {/* Location */}
         <div style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 24, marginBottom: 20 }}>
           <div style={{ fontWeight: 700, marginBottom: 16, color: 'var(--green-deep)' }}>📍 অবস্থান</div>
-          <div style={{ display: 'grid', className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }} }}>
+          <div className="form-grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div>
               <label>বিভাগ *</label>
               <select value={selectedDiv} onChange={e => { setSelectedDiv(e.target.value); set('districtId', '') }}>
@@ -365,7 +365,7 @@ export default function PostListingPage() {
             সাধারণ listing-এ buyer ছোট্ট unlock fee দিয়ে নম্বর দেখে।
             কিন্তু আপনি যদি paid listing করেন, সবাই বিনামূল্যে আপনার নম্বর দেখতে পাবে — বেশি inquiry আসবে।
           </p>
-          <div style={{ background: 'white', borderRadius: 8, padding: 12, fontSize: '0.82rem', color: TEXT_SECONDARY }}>
+          <div style={{ background: 'white', borderRadius: 8, padding: 12, fontSize: '0.82rem', color: "var(--text-muted)" }}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               {[['১০ লাখ', '৳৪০'], ['২০ লাখ', '৳৪০'], ['৩০ লাখ', '৳৬০'], ['৫০ লাখ', '৳১০০']].map(([price, fee]) => (
                 <div key={price} style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px solid var(--border)' }}>
@@ -381,5 +381,13 @@ export default function PostListingPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PostListingPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '80px 0', textAlign: 'center' }}>লোড হচ্ছে...</div>}>
+      <PostListingPageContent />
+    </Suspense>
   )
 }

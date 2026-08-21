@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { Suspense, useState, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import axios from 'axios'
@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext'
 
 type Step = 'phone' | 'otp'
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { refreshUser } = useAuth()
@@ -182,5 +182,13 @@ export default function LoginPage() {
         <Link href="/privacy" style={{ color: 'var(--green-deep)' }}>গোপনীয়তা নীতি</Link> মেনে নিয়েছেন বলে ধরা হবে
       </p>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '80px 0', textAlign: 'center' }}>লোড হচ্ছে...</div>}>
+      <LoginPageContent />
+    </Suspense>
   )
 }

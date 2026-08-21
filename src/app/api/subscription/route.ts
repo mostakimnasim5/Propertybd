@@ -43,7 +43,7 @@ export async function GET() {
         daysLeft,
         isActive,
         listingCount,
-        listingLimit: plan?.listingLimit || 0,
+        listingLimit: plan?.maxListings || 0,
         planDetails: plan,
       },
     })

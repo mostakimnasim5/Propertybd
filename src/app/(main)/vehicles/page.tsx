@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import axios from 'axios'
 import VehicleCard from '@/components/vehicle/VehicleCard'
@@ -12,7 +12,7 @@ const CONDITIONS = [
   { id: 'EXCELLENT', label: 'চমৎকার' }, { id: 'GOOD', label: 'ভালো' }, { id: 'FAIR', label: 'মোটামুটি' },
 ]
 
-export default function VehiclesPage() {
+function VehiclesPageContent() {
   const searchParams = useSearchParams()
   const [vehicles, setVehicles] = useState<any[]>([])
   const [featuredVehicles, setFeaturedVehicles] = useState<any[]>([])
@@ -225,8 +225,8 @@ export default function VehiclesPage() {
                     <div className="grid-auto" style={{ marginBottom: 28 }}>
                       {vehicles.map(v => <VehicleCard key={v.id} vehicle={v} />)}
                     </div>
-                    <Pagination current={filters.page} total={totalPages}
-                      onChange={p => setFilters(prev => ({ ...prev, page: p }))} />
+                    <Pagination page={filters.page} totalPages={totalPages}
+                      onPageChange={(p: number) => setFilters(prev => ({ ...prev, page: p }))} />
                   </>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
@@ -241,5 +241,13 @@ export default function VehiclesPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function VehiclesPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '80px 0', textAlign: 'center' }}>লোড হচ্ছে...</div>}>
+      <VehiclesPageContent />
+    </Suspense>
   )
 }

@@ -124,7 +124,7 @@ export default function HomePage() {
               </select>
               <select value={selectedDistrict} onChange={e => setSelectedDistrict(e.target.value)} disabled={!selectedDivision} style={{ fontSize: '0.9rem' }}>
                 <option value="">জেলা</option>
-                {districts.map(d => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
+                {districts.map((d: any) => <option key={d.id} value={d.id}>{d.nameBn}</option>)}
               </select>
               <input placeholder="এলাকা / কীওয়ার্ড..." value={searchText} onChange={e => setSearchText(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSearch()} style={{ fontSize: '0.9rem' }} />
               <button className="btn-primary" onClick={handleSearch} style={{ padding: '0.75rem 1rem', whiteSpace: 'nowrap' }}>🔍 খুঁজুন</button>

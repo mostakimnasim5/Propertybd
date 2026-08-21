@@ -13,11 +13,10 @@ export async function POST(req: NextRequest) {
 
     const normalizedPhone = phone.replace(/^\+?88/, '').replace(/^0/, '0')
 
-    // Find valid OTP
+    // Find latest unused OTP
     const otpRecord = await prisma.oTP.findFirst({
       where: {
         phone: normalizedPhone,
-        code,
         used: false,
         expiresAt: { gt: new Date() },
       },
@@ -25,6 +24,23 @@ export async function POST(req: NextRequest) {
     })
 
     if (!otpRecord) {
+      return errorResponse('OTP সঠিক নয় বা মেয়াদ শেষ হয়েছে', 401)
+    }
+
+    // Brute-force protection: max 5 attempts per OTP
+    if (otpRecord.attempts >= 5) {
+      await prisma.oTP.update({
+        where: { id: otpRecord.id },
+        data: { used: true },
+      })
+      return errorResponse('অনেকবার ভুল OTP দেওয়া হয়েছে। নতুন OTP নিন।', 429)
+    }
+
+    if (otpRecord.code !== code) {
+      await prisma.oTP.update({
+        where: { id: otpRecord.id },
+        data: { attempts: { increment: 1 } },
+      })
       return errorResponse('OTP সঠিক নয় বা মেয়াদ শেষ হয়েছে', 401)
     }
 

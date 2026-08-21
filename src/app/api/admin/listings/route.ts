@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url)
     const status = searchParams.get('status') || 'PENDING'
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20') || 20, 1), 50)
     const category = searchParams.get('category') || 'property'
 
     if (category === 'vehicle') {
@@ -201,55 +201,3 @@ export async function PATCH(req: NextRequest) {
     return errorResponse('সার্ভার সমস্যা', 500)
   }
 }
-          district: { select: { name: true } },
-          owner: { select: { name: true, phone: true } },
-        },
-      }),
-      prisma.listing.count({ where: { status: status as never } }),
-    ])
-
-    return successResponse({ items, total, totalPages: Math.ceil(total / limit) })
-  } catch (error) {
-    console.error('Admin listings error:', error)
-    return errorResponse('সার্ভার সমস্যা', 500)
-  }
-}
-
-// PATCH — approve, reject, feature a listing
-export async function PATCH(req: NextRequest) {
-  try {
-    const authUser = await getAuthUser()
-    if (!authUser || authUser.role !== 'ADMIN') return unauthorizedResponse()
-
-    const { id, category, action } = await req.json()
-    // action: 'approve' | 'reject' | 'feature' | 'unfeature'
-
-    if (!id || !category || !action) return errorResponse('তথ্য অসম্পূর্ণ')
-
-    const statusMap: Record<string, string> = {
-      approve: 'ACTIVE',
-      reject: 'REJECTED',
-    }
-
-    const newStatus = statusMap[action]
-    const isFeatured = action === 'feature' ? true : action === 'unfeature' ? false : undefined
-
-    const updateData: Record<string, unknown> = {}
-    if (newStatus) updateData.status = newStatus
-    if (isFeatured !== undefined) updateData.isFeatured = isFeatured
-
-    if (category === 'vehicle') {
-      await prisma.vehicle.update({ where: { id }, data: updateData })
-    } else if (category === 'construction') {
-      await prisma.construction.update({ where: { id }, data: updateData })
-    } else {
-      await prisma.listing.update({ where: { id }, data: updateData })
-    }
-
-    return successResponse({ message: 'আপডেট সফল' })
-  } catch (error) {
-    console.error('Admin action error:', error)
-    return errorResponse('সার্ভার সমস্যা', 500)
-  }
-}
-// Note: project category handled via /api/admin/listings with category=project

@@ -1,9 +1,8 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
 import { useAuth } from '@/contexts/AuthContext'
-import { useSearchParams } from 'next/navigation'
 import { useSearchParams } from 'next/navigation'
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -15,7 +14,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   EXPIRED:  { label: 'মেয়াদোত্তীর্ণ', color: '#9CA3AF' },
 }
 
-export default function DashboardPage() {
+function DashboardPageContent() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
   const [tab, setTab] = useState<'property' | 'vehicle' | 'construction' | 'project'>(
@@ -24,7 +23,7 @@ export default function DashboardPage() {
   const submitted = searchParams.get('submitted') === 'true'
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [stats, setStats] = useState({ listings: 0, vehicles: 0, projects: 0, pending: 0 })
+  const [stats, setStats] = useState<any>({ listings: 0, vehicles: 0, projects: 0, pending: 0 })
 
   // Fetch counts on mount
   useEffect(() => {
@@ -73,7 +72,7 @@ export default function DashboardPage() {
   return (
     <div style={{ padding: '32px 0', minHeight: '70vh' }}>
       <div className="container">
-        <div style={{ className="dashboard-layout" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 28, alignItems: 'start' }} }}>
+        <div className="dashboard-layout" style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: 28, alignItems: 'start' }}>
           {/* Sidebar */}
           <div style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', overflow: 'hidden' }}>
             {/* Profile summary */}
@@ -362,5 +361,13 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '80px 0', textAlign: 'center' }}>লোড হচ্ছে...</div>}>
+      <DashboardPageContent />
+    </Suspense>
   )
 }

@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import axios from 'axios'
 import ListingCard from '@/components/listing/ListingCard'
@@ -13,7 +13,7 @@ const TYPES = [
 const PURPOSES = [{ id: '', label: 'সব' }, { id: 'SALE', label: 'বিক্রি' }, { id: 'RENT', label: 'ভাড়া' }]
 const BEDROOMS = [{ id: '', label: 'যেকোনো' }, { id: '1', label: '১' }, { id: '2', label: '২' }, { id: '3', label: '৩' }, { id: '4', label: '৪+' }]
 
-export default function PropertiesPage() {
+function PropertiesPageContent() {
   const searchParams = useSearchParams()
   const [listings, setListings] = useState<any[]>([])
   const [featuredListings, setFeaturedListings] = useState<any[]>([])
@@ -218,9 +218,9 @@ export default function PropertiesPage() {
                       ))}
                     </div>
                     <Pagination
-                      current={filters.page}
-                      total={totalPages}
-                      onChange={p => setFilters(prev => ({ ...prev, page: p }))}
+                      page={filters.page}
+                      totalPages={totalPages}
+                      onPageChange={(p: number) => setFilters(prev => ({ ...prev, page: p }))}
                     />
                   </>
                 ) : (
@@ -236,5 +236,13 @@ export default function PropertiesPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function PropertiesPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '80px 0', textAlign: 'center' }}>লোড হচ্ছে...</div>}>
+      <PropertiesPageContent />
+    </Suspense>
   )
 }

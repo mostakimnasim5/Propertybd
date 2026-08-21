@@ -123,7 +123,7 @@ export default function SubscriptionPage() {
                   {/* Plan name & price */}
                   <div style={{ marginBottom: 20 }}>
                     <div style={{ fontSize: '0.8rem', fontWeight: 700, color: plan.color, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
-                      {plan.nameBn}
+                      {plan.name}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 4 }}>
                       <span style={{ fontSize: '2rem', fontWeight: 900, color: plan.color }}>
@@ -135,7 +135,7 @@ export default function SubscriptionPage() {
 
                   {/* Features */}
                   <ul style={{ listStyle: 'none', padding: 0, marginBottom: 24 }}>
-                    {plan.featuresBn.map((feature, i) => (
+                    {plan.features.map((feature: string, i: number) => (
                       <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10, fontSize: '0.88rem' }}>
                         <span style={{ color: plan.color, fontWeight: 800, fontSize: '0.9rem', marginTop: 1, flexShrink: 0 }}>✓</span>
                         <span style={{ color: 'var(--text-secondary)', lineHeight: 1.5 }}>{feature}</span>

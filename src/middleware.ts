@@ -1,14 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyToken } from '@/lib/auth'
+import { jwtVerify } from 'jose'
 
 const PROTECTED_ROUTES = ['/dashboard', '/post-listing', '/post-project', '/saved', '/subscription']
 const ADMIN_ROUTES = ['/admin']
-const AUTH_ROUTES = ['/login', '/register']
+const AUTH_ROUTES = ['/login']
 
-export function middleware(req: NextRequest) {
+interface JWTPayload {
+  userId: string
+  phone: string
+  role: string
+}
+
+async function verifyTokenEdge(token: string): Promise<JWTPayload | null> {
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!)
+    const { payload } = await jwtVerify(token, secret)
+    return payload as unknown as JWTPayload
+  } catch {
+    return null
+  }
+}
+
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   const token = req.cookies.get('auth_token')?.value
-  const user = token ? verifyToken(token) : null
+  const user = token ? await verifyTokenEdge(token) : null
 
   // Redirect logged-in users away from auth pages
   if (AUTH_ROUTES.some(r => pathname.startsWith(r)) && user) {

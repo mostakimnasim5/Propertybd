@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url)
     const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '12')
+    const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '12') || 12, 1), 50)
     const districtId = searchParams.get('districtId')
     const projectType = searchParams.get('projectType')
     const status = searchParams.get('status')
