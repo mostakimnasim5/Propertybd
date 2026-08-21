@@ -39,8 +39,19 @@ export default function SubscriptionPage() {
         transactionId: `TEST-${Date.now()}`,
       })
 
-      toast.success(res.data.data.message)
+      const { message, newRole } = res.data.data
+
+      // Refresh user context so Navbar badge updates immediately
       await refreshUser()
+
+      // Role-specific toast
+      if (newRole === 'BUILDER') {
+        toast.success('🏗️ আপনি এখন Developer/Builder! Project দিতে পারবেন।', { duration: 5000 })
+      } else if (newRole === 'BROKER') {
+        toast.success('👔 আপনি এখন Broker! বেশি listing দিতে পারবেন।', { duration: 4000 })
+      } else {
+        toast.success(message)
+      }
 
       // Reload subscription status
       const statusRes = await axios.get('/api/subscription/status')

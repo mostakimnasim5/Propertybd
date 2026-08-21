@@ -15,7 +15,7 @@ const AMENITY_PRESETS = [
 ]
 
 export default function PostProjectPage() {
-  const { user, loading } = useAuth()
+  const { user, loading, refreshUser } = useAuth()
   const router = useRouter()
   const [step, setStep] = useState<Step>(1)
   const [divisions, setDivisions] = useState<any[]>([])

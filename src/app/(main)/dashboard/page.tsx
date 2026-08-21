@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import axios from 'axios'
 import { useAuth } from '@/contexts/AuthContext'
+import { useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   PENDING:  { label: 'অপেক্ষমাণ', color: '#D97706' },
@@ -15,7 +17,11 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const [tab, setTab] = useState<'property' | 'vehicle' | 'construction' | 'project'>('property')
+  const searchParams = useSearchParams()
+  const [tab, setTab] = useState<'property' | 'vehicle' | 'construction' | 'project'>(
+    (searchParams.get('tab') as any) || 'property'
+  )
+  const submitted = searchParams.get('submitted') === 'true'
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({ listings: 0, vehicles: 0, projects: 0, pending: 0 })
@@ -183,7 +189,59 @@ export default function DashboardPage() {
               </div>
             </div>
 
+            {/* Project submitted success banner */}
+            {submitted && tab === 'project' && (
+              <div style={{
+                background: 'var(--green-light)', borderRadius: 12,
+                border: '1px solid rgba(22,106,71,0.3)',
+                padding: '14px 18px', marginBottom: 16,
+                display: 'flex', alignItems: 'center', gap: 12,
+              }}>
+                <span style={{ fontSize: '1.5rem' }}>✅</span>
+                <div>
+                  <div style={{ fontWeight: 700, color: 'var(--green-deep)', marginBottom: 2 }}>
+                    Project সফলভাবে জমা হয়েছে!
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
+                    Admin অনুমোদনের পর আপনার Project সর্বসাধারণের কাছে প্রকাশিত হবে।
+                    {user?.role === 'BUILDER' && ' আপনার role এখন 🏗️ Developer/Builder।'}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Project submitted success banner */}
+            {submitted && tab === 'project' && (
+              <div style={{
+                background: 'linear-gradient(135deg, #166A47, #0E4D34)',
+                borderRadius: 12, padding: '16px 20px', marginBottom: 16,
+                display: 'flex', alignItems: 'center', gap: 14,
+              }}>
+                <div style={{ fontSize: '2rem' }}>🎉</div>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 800, fontSize: '0.95rem', marginBottom: 2 }}>
+                    Project সফলভাবে জমা হয়েছে!
+                  </div>
+                  <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem' }}>
+                    আমাদের team অনুমোদন করলে সর্বসাধারণের কাছে প্রকাশিত হবে।
+                    {user?.role === 'BUILDER' && ' আপনি এখন Developer/Builder হিসেবে verified।'}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Project tab: builder info banner */}
+            {tab === 'project' && submitted && (
+              <div style={{ background: 'var(--green-deep)', borderRadius: 12, padding: '14px 20px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span style={{ fontSize: '1.5rem' }}>🎉</span>
+                <div>
+                  <div style={{ color: 'white', fontWeight: 700, fontSize: '0.95rem' }}>Project সফলভাবে জমা হয়েছে!</div>
+                  <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.8rem' }}>Admin অনুমোদন করলে সর্বসাধারণের কাছে প্রকাশিত হবে।</div>
+                </div>
+              </div>
+            )}
+
+            {/* Project tab: developer banner */}
             {tab === 'project' && (
               <div style={{
                 background: 'linear-gradient(135deg, var(--green-deep), #1a6b47)',
