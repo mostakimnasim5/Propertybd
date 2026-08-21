@@ -15,6 +15,22 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   EXPIRED:  { label: 'মেয়াদোত্তীর্ণ', color: '#9CA3AF' },
 }
 
+const UNIT_LABELS: Record<string, string> = {
+  AVAILABLE: 'খালি',
+  BOOKED: 'বায়না',
+  SOLD: 'বিক্রি হয়েছে',
+}
+const UNIT_COLORS: Record<string, string> = {
+  AVAILABLE: '#166A47',
+  BOOKED: '#D97706',
+  SOLD: '#6B7280',
+}
+const NEXT_UNIT_STATUS: Record<string, string> = {
+  AVAILABLE: 'BOOKED',
+  BOOKED: 'SOLD',
+  SOLD: 'AVAILABLE',
+}
+
 function DashboardPageContent() {
   const { user } = useAuth()
   const searchParams = useSearchParams()
@@ -25,6 +41,7 @@ function DashboardPageContent() {
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<any>({ listings: 0, vehicles: 0, projects: 0, pending: 0 })
+  const [expandedProject, setExpandedProject] = useState<string | null>(null)
 
   // Fetch counts on mount
   useEffect(() => {
@@ -78,6 +95,20 @@ function DashboardPageContent() {
       toast.success('বিজ্ঞাপন মুছে গেছে')
     } catch {
       toast.error('মুছতে পারা গেল না — আবার চেষ্টা করুন')
+    }
+  }
+
+  const handleUnitStatus = async (projectId: string, unitId: string, newStatus: string) => {
+    try {
+      const res = await axios.patch(`/api/projects/${projectId}/units/${unitId}`, { status: newStatus })
+      // Update that unit in the projects list without refetching everything
+      setItems(prev => prev.map(p => p.id === projectId
+        ? { ...p, units: p.units?.map((u: any) => u.id === unitId ? res.data.data.unit : u), availableUnits: res.data.data.availableUnits }
+        : p
+      ))
+      toast.success('Unit স্ট্যাটাস আপডেট হয়েছে')
+    } catch {
+      toast.error('Unit আপডেট হয়নি — আবার চেষ্টা করুন')
     }
   }
 
@@ -285,7 +316,7 @@ function DashboardPageContent() {
                     : (item.title || item.companyName || `${item.brand} ${item.model}`)
 
                   return (
-                    <div key={item.id} style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
+                    <div key={item.id} style={{ background: 'white', borderRadius: 12, border: '1px solid var(--border)', padding: 16, display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
                       <div style={{ width: 80, height: 64, borderRadius: 8, background: 'var(--surface-2)', overflow: 'hidden', flexShrink: 0 }}>
                         {img
                           ? <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -314,6 +345,17 @@ function DashboardPageContent() {
                           {status.label}
                         </span>
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                          {tab === 'project' && item.units?.length > 0 && (
+                            <button
+                              onClick={() => setExpandedProject(expandedProject === item.id ? null : item.id)}
+                              style={{
+                                background: 'none', border: '1px solid var(--border)', borderRadius: 8,
+                                color: 'var(--green-deep)', fontSize: '0.8rem', fontWeight: 700,
+                                cursor: 'pointer', fontFamily: 'inherit', padding: '4px 10px',
+                              }}>
+                              🏠 Unit ({expandedProject === item.id ? '▲' : '▼'})
+                            </button>
+                          )}
                           <button
                             onClick={() => handleDelete(item)}
                             style={{
@@ -328,6 +370,32 @@ function DashboardPageContent() {
                           </Link>
                         </div>
                       </div>
+
+                      {/* Project unit management — tap to toggle AVAILABLE → BOOKED → SOLD */}
+                      {tab === 'project' && expandedProject === item.id && item.units?.length > 0 && (
+                        <div style={{ flexBasis: '100%', borderTop: '1px dashed var(--border)', paddingTop: 12, marginTop: 12 }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            {item.units.map((u: any) => (
+                              <button
+                                key={u.id}
+                                onClick={() => handleUnitStatus(item.id, u.id, NEXT_UNIT_STATUS[u.status] || 'AVAILABLE')}
+                                title={`${u.unitType} — ফ্লোর ${u.floor ?? 'N/A'} • ${u.size} sqft • ৳${Number(u.price).toLocaleString('bn-BD')}`}
+                                style={{
+                                  background: `${UNIT_COLORS[u.status]}14`, border: `1.5px solid ${UNIT_COLORS[u.status]}`,
+                                  borderRadius: 8, padding: '6px 10px', cursor: 'pointer', fontFamily: 'inherit',
+                                  fontSize: '0.75rem', fontWeight: 700, color: UNIT_COLORS[u.status], textAlign: 'left',
+                                }}
+                              >
+                                <div>{u.unitType}{u.floor != null ? ` • ${u.floor}F` : ''}</div>
+                                <div style={{ opacity: 0.75 }}>{UNIT_LABELS[u.status]} {u.status !== 'SOLD' ? '→ ' + (NEXT_UNIT_STATUS[u.status] === 'BOOKED' ? 'বায়না' : NEXT_UNIT_STATUS[u.status] === 'SOLD' ? 'বিক্রি' : 'খালি') : '↩️ রিসেট'}</div>
+                              </button>
+                            ))}
+                          </div>
+                          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 8 }}>
+                            ক্লিক করে স্ট্যাটাস পরিবর্তন — <span style={{ color: '#166A47', fontWeight: 700 }}>খালি</span> → <span style={{ color: '#D97706', fontWeight: 700 }}>বায়না</span> → <span style={{ color: '#6B7280', fontWeight: 700 }}>বিক্রি</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )
                 })}

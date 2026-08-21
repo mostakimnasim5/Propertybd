@@ -28,6 +28,7 @@ export async function GET(_req: NextRequest) {
         district: { select: { name: true, nameBn: true } },
         construction: { select: { companyName: true } },
         _count: { select: { units: true } },
+        units: { select: { id: true, unitType: true, floor: true, size: true, price: true, status: true }, orderBy: { createdAt: 'asc' } },
       },
     })
 
